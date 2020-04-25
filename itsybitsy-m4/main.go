@@ -27,6 +27,17 @@ var (
 func main() {
 	serial.Configure(machine.UARTConfig{})
 
+	waitForStart()
+
+	digitalReadVoltage()
+	digitalReadGround()
+	digitalWrite()
+
+	endTests()
+}
+
+// wait for keypress on serial port to start test suite.
+func waitForStart() {
 	time.Sleep(3 * time.Second)
 
 	println("=== TINYGO INTEGRATION TESTS ===")
@@ -39,15 +50,18 @@ func main() {
 			if data != 't' {
 				time.Sleep(100 * time.Millisecond)
 			}
-			break
+			return
 		}
 	}
+}
 
-	digitalReadVoltage()
-	digitalReadGround()
-	digitalWrite()
-
+func endTests() {
 	println("Tests complete.")
+
+	// tests done, now sleep waiting for baud reset to load new code
+	for {
+		time.Sleep(1 * time.Second)
+	}
 }
 
 // digital read of D11 pin physically connected to V
@@ -108,10 +122,5 @@ func digitalWrite() {
 		return
 	} else {
 		println(" pass")
-	}
-
-	// tests done, now sleep waiting for baud reset
-	for {
-		time.Sleep(1 * time.Second)
 	}
 }
