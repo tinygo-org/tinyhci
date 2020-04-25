@@ -30,4 +30,20 @@ The digital inputs and outputs are wired in a loopback form in order to test if 
 
 ### I2C
 
-The I2C pins are wired to an MPU-6050 accelerometer to check if the device responds as connected.
+The I2C pins are wired to an MPU-6050 accelerometer to check if the device responds as expected when connected.
+
+### ADC
+
+TODO
+
+### SPI
+
+TODO
+
+### PWM
+
+TODO
+
+### UART
+
+TODO
