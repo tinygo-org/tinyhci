@@ -109,4 +109,9 @@ func digitalWrite() {
 	} else {
 		println(" pass")
 	}
+
+	// tests done, now sleep waiting for baud reset
+	for {
+		time.Sleep(1 * time.Second)
+	}
 }
