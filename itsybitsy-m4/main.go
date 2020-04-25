@@ -25,6 +25,7 @@ var (
 	readG    = machine.D12
 	readpin  = machine.D9
 	writepin = machine.D10
+	powerpin = machine.D7
 
 	serial = machine.UART0
 	accel  *mpu6050.Device
@@ -135,13 +136,31 @@ func digitalWrite() {
 
 // checks to see if an attached MPU-6050 accelerometer is connected.
 func i2cConnection() {
+	powerpin.Configure(machine.PinConfig{Mode: machine.PinOutput})
+
 	a := mpu6050.New(machine.I2C0)
 	accel = &a
+	//accel.Configure()
+
+	print("i2cConnectionNoPower:")
+
+	// should not be connected when not powered
+	powerpin.Low()
+	time.Sleep(1 * time.Second)
+	if accel.Connected() {
+		println(" fail")
+	} else {
+		println(" pass")
+	}
+
+	print("i2cConnectionPower:")
+	// turn on power and should be connected now
+	powerpin.High()
+	time.Sleep(500 * time.Millisecond)
+
 	accel.Configure()
+	time.Sleep(500 * time.Millisecond)
 
-	print("i2cTests:")
-
-	// should be connected
 	if !accel.Connected() {
 		println(" fail")
 		return
