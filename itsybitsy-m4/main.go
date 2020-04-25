@@ -9,10 +9,15 @@ package main
 //	D11 <--> 3V
 //	D10 <--> D9
 //
+// I2C tests:
+// 	connect I2C pins to MPU-6050
+//
 import (
 	"machine"
 
 	"time"
+
+	"tinygo.org/x/drivers/mpu6050"
 )
 
 var (
@@ -22,16 +27,19 @@ var (
 	writepin = machine.D10
 
 	serial = machine.UART0
+	accel  *mpu6050.Device
 )
 
 func main() {
 	serial.Configure(machine.UARTConfig{})
+	machine.I2C0.Configure(machine.I2CConfig{})
 
 	waitForStart()
 
 	digitalReadVoltage()
 	digitalReadGround()
 	digitalWrite()
+	i2cConnection()
 
 	endTests()
 }
@@ -123,4 +131,21 @@ func digitalWrite() {
 	} else {
 		println(" pass")
 	}
+}
+
+// checks to see if an attached MPU-6050 accelerometer is connected.
+func i2cConnection() {
+	a := mpu6050.New(machine.I2C0)
+	accel = &a
+	accel.Configure()
+
+	print("i2cTests:")
+
+	// should be connected
+	if !accel.Connected() {
+		println(" fail")
+		return
+	}
+
+	println(" pass")
 }
