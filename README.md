@@ -34,7 +34,7 @@ The I2C pins are wired to an MPU-6050 accelerometer to check if the device respo
 
 ### ADC
 
-TODO
+Analog inputs are connected using a voltage divider made using resistors. The reference voltage, reference divided by 2, reference divided by 4, and ground levels can be read using the ADC.
 
 ### SPI
 

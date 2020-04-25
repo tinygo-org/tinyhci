@@ -9,6 +9,12 @@ package main
 //	D11 <--> 3V
 //	D10 <--> D9
 //
+// Analog read tests:
+//	A0 <--> G
+//	A1 <--> 3.3V/2
+//	A2 <--> 3.3V/4
+//  A3 <--> 3.3V
+//
 // I2C tests:
 // 	ItsyBitsy-M4 SCL <--> MPU-6050 SCL
 // 	ItsyBitsy-M4 SDA <--> MPU-6050 SDA
@@ -24,11 +30,15 @@ import (
 )
 
 var (
-	readV    = machine.D11
-	readG    = machine.D12
-	readpin  = machine.D9
-	writepin = machine.D10
-	powerpin = machine.D7
+	readV         = machine.D11
+	readG         = machine.D12
+	readpin       = machine.D9
+	writepin      = machine.D10
+	powerpin      = machine.D7
+	analogV       = machine.ADC{machine.A0}
+	analogHalf    = machine.ADC{machine.A1}
+	analogQuarter = machine.ADC{machine.A2}
+	analogG       = machine.ADC{machine.A3}
 
 	serial = machine.UART0
 	accel  *mpu6050.Device
@@ -37,12 +47,17 @@ var (
 func main() {
 	serial.Configure(machine.UARTConfig{})
 	machine.I2C0.Configure(machine.I2CConfig{})
+	machine.InitADC()
 
 	waitForStart()
 
 	digitalReadVoltage()
 	digitalReadGround()
 	digitalWrite()
+	analogReadVoltage()
+	analogReadGround()
+	analogReadHalfVoltage()
+	analogReadQuarterVoltage()
 	i2cConnection()
 
 	endTests()
@@ -135,6 +150,86 @@ func digitalWrite() {
 	} else {
 		println(" pass")
 	}
+}
+
+func analogReadVoltage() {
+	analogV.Configure()
+
+	print("analogReadVoltage:")
+
+	// should be close to max
+	val := analogV.Get()
+	if val == 65535 {
+		println(" pass")
+
+		return
+	} else {
+		println(" fail")
+		print("  expected: ")
+		print("'val == 65535'")
+		print(", actual: ")
+		println(val)
+	}
+}
+
+func analogReadGround() {
+	analogG.Configure()
+
+	print("analogReadGround:")
+
+	// should be close to zero
+	val := analogG.Get()
+	if val == 0 {
+		println(" pass")
+		return
+	} else {
+		println(" fail")
+
+		print("  expected: ")
+		print("'val == 0'")
+		print(", actual: ")
+		println(val)
+	}
+}
+
+func analogReadHalfVoltage() {
+	analogHalf.Configure()
+
+	print("analogReadHalfVoltage:")
+
+	// should be around half the max
+	val := analogHalf.Get()
+	if val < 65500/2+100 && val > 65500/2-100 {
+		println(" pass")
+		return
+	}
+	println(" fail")
+
+	print("  expected: ")
+	print("'val < 65500/2+100 && val > 65500/2-100'")
+	print(", actual: ")
+	println(val)
+}
+
+func analogReadQuarterVoltage() {
+	analogQuarter.Configure()
+
+	print("analogReadQuarterVoltage:")
+
+	// should be around quarter the max V
+	val := analogQuarter.Get()
+	if val < 65500/4+100 && val > 65500/4-100 {
+		println(" pass")
+
+		return
+	}
+
+	println(" fail")
+
+	print("  expected: ")
+	print("'val < 65500/4+100 && val > 65500/4-100'")
+	print(", actual: ")
+	println(val)
 }
 
 // checks to see if an attached MPU-6050 accelerometer is connected.
