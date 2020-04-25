@@ -20,23 +20,39 @@ var (
 	readG    = machine.D12
 	readpin  = machine.D9
 	writepin = machine.D10
+
+	serial = machine.UART0
 )
 
 func main() {
+	serial.Configure(machine.UARTConfig{})
+
 	time.Sleep(3 * time.Second)
 
-	println("Starting tests...")
+	println("=== TINYGO INTEGRATION TESTS ===")
+	println("Press 't' key to begin running tests...")
 
-	verifyDigitalReadV()
-	verifyDigitalReadG()
-	verifyDigitalWrite()
+	for {
+		if serial.Buffered() > 0 {
+			data, _ := serial.ReadByte()
+
+			if data != 't' {
+				time.Sleep(100 * time.Millisecond)
+			}
+			break
+		}
+	}
+
+	digitalReadVoltage()
+	digitalReadGround()
+	digitalWrite()
 
 	println("Tests complete.")
 }
 
 // digital read of D11 pin physically connected to V
-func verifyDigitalReadV() {
-	print("verifyDigitalReadV:")
+func digitalReadVoltage() {
+	print("digitalReadVoltage:")
 
 	readV.Configure(machine.PinConfig{Mode: machine.PinInput})
 
@@ -50,8 +66,8 @@ func verifyDigitalReadV() {
 }
 
 // digital read of D12 pin physically connected to G
-func verifyDigitalReadG() {
-	print("verifyDigitalReadG:")
+func digitalReadGround() {
+	print("digitalReadGround:")
 
 	readG.Configure(machine.PinConfig{Mode: machine.PinInput})
 
@@ -65,13 +81,13 @@ func verifyDigitalReadG() {
 }
 
 // digital write on/off of D9 pin as input physically connected to D10 pin as output.
-func verifyDigitalWrite() {
+func digitalWrite() {
 	readpin.Configure(machine.PinConfig{Mode: machine.PinInput})
 	writepin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 
-	print("verifyDigitalWrite On:")
+	print("digitalWriteOn:")
 	writepin.High()
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// should be on
 	if readpin.Get() {
@@ -80,9 +96,11 @@ func verifyDigitalWrite() {
 		println(" fail")
 	}
 
-	print("verifyDigitalWrite Off:")
+	time.Sleep(100 * time.Millisecond)
+
+	print("digitalWriteOff:")
 	writepin.Low()
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// should be off
 	if readpin.Get() {
