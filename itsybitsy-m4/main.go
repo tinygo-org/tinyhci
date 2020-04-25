@@ -4,13 +4,16 @@ package main
 //
 // Wire up the pins, and run it while connected to the USB port.
 //
-// Digital i/o tests:
+// Digital read/write tests:
 //	D12 <--> G
 //	D11 <--> 3V
 //	D10 <--> D9
 //
 // I2C tests:
-// 	connect I2C pins to MPU-6050
+// 	ItsyBitsy-M4 SCL <--> MPU-6050 SCL
+// 	ItsyBitsy-M4 SDA <--> MPU-6050 SDA
+// 	ItsyBitsy-M4 G <--> MPU-6050 GND
+// 	ItsyBitsy-M4 D7 <--> MPU-6050 VCC
 //
 import (
 	"machine"
@@ -140,7 +143,6 @@ func i2cConnection() {
 
 	a := mpu6050.New(machine.I2C0)
 	accel = &a
-	//accel.Configure()
 
 	print("i2cConnectionNoPower:")
 
