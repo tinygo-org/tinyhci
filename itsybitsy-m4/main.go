@@ -10,10 +10,9 @@ package main
 //	D10 <--> D9
 //
 // Analog read tests:
-//	A0 <--> G
-//	A1 <--> 3.3V/2
-//	A2 <--> 3.3V/4
-//  A3 <--> 3.3V
+//	A0 <--> 3.3V
+//	A1 <--> 3.3V/2 (use voltage divider)
+//	A2 <--> G
 //
 // I2C tests:
 // 	ItsyBitsy-M4 SCL <--> MPU-6050 SCL
@@ -30,18 +29,27 @@ import (
 )
 
 var (
-	readV         = machine.D11
-	readG         = machine.D12
-	readpin       = machine.D9
-	writepin      = machine.D10
-	powerpin      = machine.D7
-	analogV       = machine.ADC{machine.A0}
-	analogHalf    = machine.ADC{machine.A1}
-	analogQuarter = machine.ADC{machine.A2}
-	analogG       = machine.ADC{machine.A3}
+	// used by digital tests
+	readV    = machine.D11
+	readG    = machine.D12
+	readpin  = machine.D9
+	writepin = machine.D10
+
+	// used by analog tests
+	analogV    = machine.ADC{machine.A0}
+	analogHalf = machine.ADC{machine.A1}
+	analogG    = machine.ADC{machine.A2}
+
+	// used by i2c tests
+	accel    *mpu6050.Device
+	powerpin = machine.D7
 
 	serial = machine.UART0
-	accel  *mpu6050.Device
+)
+
+const (
+	maxanalog       = 65535
+	allowedvariance = 256
 )
 
 func main() {
@@ -57,7 +65,6 @@ func main() {
 	analogReadVoltage()
 	analogReadGround()
 	analogReadHalfVoltage()
-	analogReadQuarterVoltage()
 	i2cConnection()
 
 	endTests()
@@ -152,6 +159,7 @@ func digitalWrite() {
 	}
 }
 
+// analog read of pin connected to supply voltage.
 func analogReadVoltage() {
 	analogV.Configure()
 
@@ -159,19 +167,20 @@ func analogReadVoltage() {
 
 	// should be close to max
 	val := analogV.Get()
-	if val == 65535 {
+	if val >= maxanalog-allowedvariance {
 		println(" pass")
 
 		return
 	} else {
 		println(" fail")
 		print("  expected: ")
-		print("'val == 65535'")
+		print("'val >= 65535-256'")
 		print(", actual: ")
 		println(val)
 	}
 }
 
+// analog read of pin connected to ground.
 func analogReadGround() {
 	analogG.Configure()
 
@@ -179,19 +188,21 @@ func analogReadGround() {
 
 	// should be close to zero
 	val := analogG.Get()
-	if val == 0 {
+	if val <= allowedvariance {
 		println(" pass")
 		return
 	} else {
 		println(" fail")
 
 		print("  expected: ")
-		print("'val == 0'")
+		print("'val <= 256'")
 		print(", actual: ")
 		println(val)
 	}
 }
 
+// analog read of pin connected to supply voltage that has been divided by 2
+// using resistors.
 func analogReadHalfVoltage() {
 	analogHalf.Configure()
 
@@ -199,35 +210,14 @@ func analogReadHalfVoltage() {
 
 	// should be around half the max
 	val := analogHalf.Get()
-	if val < 65500/2+100 && val > 65500/2-100 {
+	if val <= maxanalog/2+allowedvariance && val >= maxanalog/2-allowedvariance {
 		println(" pass")
 		return
 	}
 	println(" fail")
 
 	print("  expected: ")
-	print("'val < 65500/2+100 && val > 65500/2-100'")
-	print(", actual: ")
-	println(val)
-}
-
-func analogReadQuarterVoltage() {
-	analogQuarter.Configure()
-
-	print("analogReadQuarterVoltage:")
-
-	// should be around quarter the max V
-	val := analogQuarter.Get()
-	if val < 65500/4+100 && val > 65500/4-100 {
-		println(" pass")
-
-		return
-	}
-
-	println(" fail")
-
-	print("  expected: ")
-	print("'val < 65500/4+100 && val > 65500/4-100'")
+	print("'val <= 65535/2+256 && val >= 65535/2-256'")
 	print(", actual: ")
 	println(val)
 }
@@ -243,7 +233,7 @@ func i2cConnection() {
 
 	// should not be connected when not powered
 	powerpin.Low()
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Millisecond)
 	if accel.Connected() {
 		println(" fail")
 	} else {
@@ -253,10 +243,10 @@ func i2cConnection() {
 	print("i2cConnectionPower:")
 	// turn on power and should be connected now
 	powerpin.High()
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	accel.Configure()
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 
 	if !accel.Connected() {
 		println(" fail")

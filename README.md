@@ -14,13 +14,18 @@ The makefile compiles the test code, flashes it onto the connected microcontroll
 $ make test-itsybitsy-m4 
 tinygo flash -size short -target=itsybitsy-m4 ./itsybitsy-m4/
    code    data     bss |   flash     ram
-   9612      40    6360 |    9652    6400
+  11020      40    6360 |   11060    6400
 Running tests...
 digitalReadVoltage: pass
 digitalReadGround: pass
 digitalWriteOn: pass
 digitalWriteOff: pass
-i2cTests: pass
+analogReadVoltage: pass
+analogReadGround: pass
+analogReadHalfVoltage: fail
+  expected: 'val <= 65535/2+256 && val >= 65535/2-256', actual: 33024
+i2cConnectionNoPower: pass
+i2cConnectionPower: pass
 Tests complete.
 ```
 
