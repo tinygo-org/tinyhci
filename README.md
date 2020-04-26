@@ -1,14 +1,15 @@
 # TinyGo Integration Tests
 
-Used to test actual hardware connections for microcontrollers.
+Used to test actual hardware connections for microcontrollers. It is intended to provide smoke test implementations that exercise the basic functionality for each kind of hardware interface for each supported microcontroller.
 
 Currently implemented integration tests for:
 
 - Adafruit ItsyBitsy-M4
+- Arduino Nano33-IoT
 
 ## How it works
 
-The makefile compiles the test code, flashes it onto the connected microcontroller board, and then connects to the microcontroller serial port. The test program waits for a keypress to be detected on the serial port, and then runs thru the hardware integration tests, outputting the results back out to the serial port.
+The makefile compiles the test code, flashes it onto the connected board, and then connects to the microcontroller serial port. The test program waits for a keypress to be detected on the serial port, and then runs thru the hardware integration tests, outputting the results back out to the serial port.
 
 ```
 $ make test-itsybitsy-m4 
@@ -39,7 +40,7 @@ The I2C pins are wired to an MPU-6050 accelerometer to check if the device respo
 
 ### ADC
 
-Analog inputs are connected using a voltage divider made using resistors. The reference voltage, reference divided by 2, reference divided by 4, and ground levels can be read using the ADC.
+Analog inputs are connected using a voltage divider made using two resistors. The reference voltage, reference divided by 2, and ground level voltage can then be read using the ADC.
 
 ### SPI
 
