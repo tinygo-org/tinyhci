@@ -1,11 +1,12 @@
 # open serial port
-stty -F /dev/ttyACM0 115200 raw -echo
+stty raw -F $1 $2 -echo
 
-exec 3</dev/ttyACM0                     # redirect serial to fd3
+exec 3<$1                               # redirect serial to fd3
   cat <&3 > /tmp/testoutput.txt &       # redirect fd3 serial to file
+  sleep $4
   PID=$!                                # save pid to kill test if needed
-    echo "t" > /dev/ttyACM0             # send command to start tests
-    sleep 5.0s                          # wait for response
+    echo "t" > $1                       # send command to start tests
+    sleep $3                            # wait for response
   kill $PID                             # kill test if takes too long
   wait $PID 2>/dev/null                 # surpress "Terminated" output
 
