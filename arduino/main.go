@@ -41,8 +41,7 @@ var (
 	analogG    = machine.ADC{machine.ADC2}
 
 	// used by i2c tests
-	accel    *mpu6050.Device
-	powerpin machine.Pin = 7
+	accel *mpu6050.Device
 
 	serial = machine.UART0
 )
@@ -223,8 +222,6 @@ func analogReadHalfVoltage() {
 
 // checks to see if an attached MPU-6050 accelerometer is connected.
 func i2cConnection() {
-	powerpin.Configure(machine.PinConfig{Mode: machine.PinOutput})
-
 	a := mpu6050.New(machine.I2C0)
 	accel = &a
 
