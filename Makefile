@@ -36,7 +36,7 @@ ifndef GOINSTALLED
 	wget "https://dl.google.com/go/$(TARGET_GOVERSION).linux-amd64.tar.gz" -O /tmp/go.tar.gz
 	sudo tar -xzf /tmp/go.tar.gz -C /usr/local
 	@echo "# add Go to path" >> ~/.bashrc
-	@echo 'export PATH="$PATH:/usr/local/go/bin"' >> ~/.bashrc
+	@echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
 	source ~/.bashrc
 endif
 	echo "$(GREEN)Go is now installed:$(NOCOLOR)\n"
@@ -47,8 +47,14 @@ ifndef TINYGOINSTALLED
 	wget "https://github.com/tinygo-org/tinygo/releases/download/v$(TARGET_TINYGOVERSION)/tinygo_$(TARGET_TINYGOVERSION)_amd64.deb"
 	sudo dpkg -i "tinygo_$(TARGET_TINYGOVERSION)_amd64.deb"
 	@echo "# add TinyGo to path" >> ~/.bashrc
-	@echo 'export PATH="$PATH:/usr/local/tinygo/bin"' >> ~/.bashrc
+	@echo 'export PATH=$PATH:/usr/local/tinygo/bin' >> ~/.bashrc
 	source ~/.bashrc
 endif
 	echo "$(GREEN)TinyGo is now installed:$(NOCOLOR)\n"
 	tinygo version
+
+update-tinygo:
+	@echo "Not yet"
+
+install-packages:
+	go get -d -u tinygo.org/x/drivers
