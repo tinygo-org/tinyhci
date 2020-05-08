@@ -19,9 +19,7 @@ func main() {
 
 	port := os.Args[1]
 	speed, _ := strconv.Atoi(os.Args[2])
-	delayResponse, _ := strconv.Atoi(os.Args[3])
-
-	fmt.Println(port, speed, delayResponse)
+	//delayResponse, _ := strconv.Atoi(os.Args[3])
 
 	// open serial port
 	p, err := serial.Open(port, &serial.Mode{BaudRate: speed})
