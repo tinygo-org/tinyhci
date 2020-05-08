@@ -1,0 +1,5 @@
+# Adafruit ItsyBitsy-M4
+SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="802b", SYMLINK+="itsybitsy_m4"
+
+# Arduino Uno
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0243", SYMLINK+="arduino_uno"

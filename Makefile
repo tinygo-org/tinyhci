@@ -8,22 +8,22 @@ NOCOLOR := \033[0m
 RED     := \033[0;31m
 GREEN   := \033[0;32m
 
-test-itsybitsy-m4:
-	tinygo flash -size short -target=itsybitsy-m4 ./itsybitsy-m4/
-	@sleep 4.0s
+test-itsybitsy-m4: build/testrunner
+	tinygo flash -size short -target=itsybitsy-m4 -port=/dev/itsybitsy_m4 ./itsybitsy-m4/
+	@sleep 2.0s
 	@echo "Running tests..."
-	@./runtest.sh /dev/ttyACM0 115200 5.0s 1.0s
+	./build/testrunner /dev/itsybitsy_m4 115200 5
 
-test-arduino-nano33:
+test-arduino-nano33: build/testrunner
 	tinygo flash -size short -target=arduino-nano33 ./arduino-nano33/
 	@sleep 4.0s
 	@echo "Running tests..."
-	@./runtest.sh /dev/ttyACM0 115200 5.0s 1.0s
+	./build/testrunner /dev/ttyACM0 115200 5
 
-test-arduino-uno:
-	tinygo flash -size short -target=arduino ./arduino/
+test-arduino-uno: build/testrunner
+	tinygo flash -size short -target=arduino -port=/dev/arduino_uno ./arduino/
 	@echo "Running tests..."
-	@./runtest.sh /dev/ttyACM0 57600 5.0s 3.0s
+	./build/testrunner /dev/arduino_uno 57600 5
 
 update-go:
 	@test "$(CURRENT_GOVERSION)" = "$(TARGET_GOVERSION)" && ( echo "$(RED)$(TARGET_GOVERSION) has already been installed$(NOCOLOR)\n" ; exit 1 )
@@ -58,3 +58,10 @@ update-tinygo:
 
 install-packages:
 	go get -d -u tinygo.org/x/drivers
+
+build/testrunner:
+	mkdir -p build
+	go build -o build/testrunner tools/testrunner/main.go
+
+clean:
+	rm -rf build
