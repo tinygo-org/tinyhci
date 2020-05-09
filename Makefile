@@ -8,7 +8,9 @@ NOCOLOR := \033[0m
 RED     := \033[0;31m
 GREEN   := \033[0;32m
 
-all: clean test-itsybitsy-m4 test-arduino-nano33 test-arduino-uno
+all: clean test
+
+test: test-itsybitsy-m4 test-arduino-nano33 test-arduino-uno
 
 test-itsybitsy-m4: build/testrunner
 	tinygo flash -size short -target=itsybitsy-m4 -port=/dev/itsybitsy_m4 ./itsybitsy-m4/
@@ -65,9 +67,6 @@ install-bossa:
 	make -C build/BOSSA
 	sudo cp build/BOSSA/bin/bossac /usr/local/bin
 
-install-packages:
-	go get -d -u tinygo.org/x/drivers
-
 build/testrunner:
 	mkdir -p build
 	go build -o build/testrunner tools/testrunner/main.go
@@ -76,8 +75,23 @@ build/server:
 	mkdir -p build
 	go build -o build/server tools/server/main.go
 
-install-service:
-	@echo "Not yet"
-
 clean:
 	rm -rf build
+
+install-web-service:
+	sudo cp service/tinygohci.service /etc/systemd/system/
+
+install-ngrok-service:
+	sudo cp service/ngrok.service /etc/systemd/system/
+
+start-web-service:
+	sudo systemctl enable tinygohci.service && systemctl start tinygohci.service
+
+stop-web-service:
+	sudo systemctl stop tinygohci.service
+
+start-ngrok-service:
+	sudo systemctl enable ngrok.service && systemctl start ngrok.service
+
+stop-ngrok-service:
+	sudo systemctl stop ngrok.service
