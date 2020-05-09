@@ -1,0 +1,21 @@
+[Unit]
+Description=TinyGo HCI service
+ConditionPathExists=/home/upsquared/tinygo-hci/build/server
+After=network.target
+
+[Service]
+Type=simple
+User=upsquared
+
+Restart=on-failure
+RestartSec=10
+startLimitIntervalSec=60
+
+WorkingDirectory=/home/upsquared/tinygo-hci/build
+ExecStart=/home/upsquared/tinygo-hci/build/server
+
+# set this to the value you need
+Environment=GHKEY=1234
+
+[Install]
+WantedBy=multi-user.target
