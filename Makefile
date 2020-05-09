@@ -8,6 +8,8 @@ NOCOLOR := \033[0m
 RED     := \033[0;31m
 GREEN   := \033[0;32m
 
+all: clean test-itsybitsy-m4 test-arduino-nano33 test-arduino-uno
+
 test-itsybitsy-m4: build/testrunner
 	tinygo flash -size short -target=itsybitsy-m4 -port=/dev/itsybitsy_m4 ./itsybitsy-m4/
 	@sleep 2.0s
@@ -15,10 +17,10 @@ test-itsybitsy-m4: build/testrunner
 	./build/testrunner /dev/itsybitsy_m4 115200 5
 
 test-arduino-nano33: build/testrunner
-	tinygo flash -size short -target=arduino-nano33 ./arduino-nano33/
-	@sleep 4.0s
+	tinygo flash -size short -target=arduino-nano33 -port=/dev/arduino_nano33 ./arduino-nano33/
+	@sleep 2.0s
 	@echo "Running tests..."
-	./build/testrunner /dev/ttyACM0 115200 5
+	./build/testrunner /dev/arduino_nano33 115200 5
 
 test-arduino-uno: build/testrunner
 	tinygo flash -size short -target=arduino -port=/dev/arduino_uno ./arduino/
@@ -55,6 +57,13 @@ endif
 
 update-tinygo:
 	@echo "Not yet"
+
+install-bossa:
+	sudo apt install libreadline-dev libwxgtk3.0-*
+	mkdir -p build
+	git clone https://github.com/shumatech/BOSSA.git build/BOSSA
+	make -C build/BOSSA
+	sudo cp build/BOSSA/bin/bossac /usr/local/bin
 
 install-packages:
 	go get -d -u tinygo.org/x/drivers
