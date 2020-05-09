@@ -72,5 +72,12 @@ build/testrunner:
 	mkdir -p build
 	go build -o build/testrunner tools/testrunner/main.go
 
+build/server:
+	mkdir -p build
+	go build -o build/server tools/server/main.go
+
+install-service:
+	@echo "Not yet"
+
 clean:
 	rm -rf build
