@@ -20,8 +20,11 @@ func main() {
 		panic("You must set an ENV var with your GHKEY")
 	}
 
-	hook, _ := github.New(github.Options.Secret(ghkey))
+	builds := make(chan string)
 
+	go processBuilds(builds)
+
+	hook, _ := github.New(github.Options.Secret(ghkey))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := hook.Parse(r, github.PushEvent)
 		if err != nil {
@@ -34,16 +37,25 @@ func main() {
 		switch payload.(type) {
 		case github.PushPayload:
 			push := payload.(github.PushPayload)
-			log.Printf("%+v\n", push)
-			out, err := exec.Command("make test-itsybitsy-m4").Output()
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			log.Printf("The output is %s\n", out)
+			builds <- push.After
 		}
 	})
 
 	log.Println("Starting TinyHCI server...")
 	http.ListenAndServe(":8000", nil)
+}
+
+func processBuilds(builds chan string) {
+	for {
+		select {
+		case build := <-builds:
+			log.Printf("Running tests for commit %s\n", build)
+			out, err := exec.Command("sh", "-c", "make test-itsybitsy-m4").Output()
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			log.Printf(string(out))
+		}
+	}
 }
