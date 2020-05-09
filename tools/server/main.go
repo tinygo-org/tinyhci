@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
+	"os/exec"
 
 	"net/http"
 
@@ -22,23 +23,24 @@ func main() {
 	hook, _ := github.New(github.Options.Secret(ghkey))
 
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		payload, err := hook.Parse(r, github.ReleaseEvent, github.PullRequestEvent)
+		payload, err := hook.Parse(r, github.PullRequestEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
 				// ok event wasn't one of the ones asked to be parsed
-				fmt.Println("Not the event you are looking for")
+				log.Println("Not the event you are looking for")
+				return
 			}
 		}
 		switch payload.(type) {
-		case github.ReleasePayload:
-			release := payload.(github.ReleasePayload)
-			// Do whatever you want from here...
-			fmt.Printf("%+v", release)
-
 		case github.PullRequestPayload:
 			pullRequest := payload.(github.PullRequestPayload)
-			// Do whatever you want from here...
-			fmt.Printf("%+v", pullRequest)
+			log.Printf("%+v\n", pullRequest)
+			out, err := exec.Command("make test-itsybitsy-m4").Output()
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			log.Printf("The output is %s\n", out)
 		}
 	})
 	http.ListenAndServe(":8000", nil)
