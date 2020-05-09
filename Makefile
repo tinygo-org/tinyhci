@@ -79,10 +79,10 @@ clean:
 	rm -rf build
 
 install-web-service:
-	sudo cp service/tinygohci.service /etc/systemd/system/
+	sudo cp tools/service/tinygohci.service /etc/systemd/system/
 
 install-ngrok-service:
-	sudo cp service/ngrok.service /etc/systemd/system/
+	sudo cp tools/service/ngrok.service /etc/systemd/system/
 
 start-web-service:
 	sudo systemctl enable tinygohci.service && systemctl start tinygohci.service
