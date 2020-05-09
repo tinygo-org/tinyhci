@@ -69,14 +69,24 @@ install-bossa:
 
 build/testrunner:
 	mkdir -p build
-	go build -o build/testrunner tools/testrunner/main.go
+	go build -o build/testrunner tools/testrunner/*
 
 build/server:
 	mkdir -p build
-	go build -o build/server tools/server/main.go
+	go build -o build/server tools/server/*
 
 clean:
 	rm -rf build
+
+clean-server:
+	rm -f build/server
+
+clean-testrunner:
+	rm -f build/testrunner
+
+testrunner: clean-testrunner build/testrunner
+
+server: clean-server build/server
 
 install-web-service:
 	sudo cp tools/service/tinygohci.service /etc/systemd/system/
