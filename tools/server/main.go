@@ -23,7 +23,7 @@ func main() {
 	hook, _ := github.New(github.Options.Secret(ghkey))
 
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		payload, err := hook.Parse(r, github.PullRequestEvent)
+		payload, err := hook.Parse(r, github.PushEvent)
 		if err != nil {
 			if err == github.ErrEventNotFound {
 				// ok event wasn't one of the ones asked to be parsed
@@ -32,9 +32,9 @@ func main() {
 			}
 		}
 		switch payload.(type) {
-		case github.PullRequestPayload:
-			pullRequest := payload.(github.PullRequestPayload)
-			log.Printf("%+v\n", pullRequest)
+		case github.PushPayload:
+			push := payload.(github.PushPayload)
+			log.Printf("%+v\n", push)
 			out, err := exec.Command("make test-itsybitsy-m4").Output()
 			if err != nil {
 				log.Println(err)
