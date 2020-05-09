@@ -49,7 +49,7 @@ var (
 
 const (
 	maxanalog       = 65535
-	allowedvariance = 256
+	allowedvariance = 128
 )
 
 func main() {
@@ -166,7 +166,14 @@ func analogReadVoltage() {
 	print("analogReadVoltage:")
 
 	// should be close to max
-	val := analogV.Get()
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogV.Get()
+		avg += int(v)
+	}
+	avg /= 10
+	val := uint16(avg)
+
 	if val >= maxanalog-allowedvariance {
 		println(" pass")
 
@@ -187,7 +194,14 @@ func analogReadGround() {
 	print("analogReadGround:")
 
 	// should be close to zero
-	val := analogG.Get()
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogG.Get()
+		avg += int(v)
+	}
+	avg /= 10
+	val := uint16(avg)
+
 	if val <= allowedvariance {
 		println(" pass")
 		return
@@ -209,7 +223,14 @@ func analogReadHalfVoltage() {
 	print("analogReadHalfVoltage:")
 
 	// should be around half the max
-	val := analogHalf.Get()
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogHalf.Get()
+		avg += int(v)
+	}
+	avg /= 10
+	val := uint16(avg)
+
 	if val <= maxanalog/2+allowedvariance && val >= maxanalog/2-allowedvariance {
 		println(" pass")
 		return
