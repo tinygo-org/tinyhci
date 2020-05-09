@@ -1,5 +1,11 @@
 # Adafruit ItsyBitsy-M4
 SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="802b", SYMLINK+="itsybitsy_m4"
 
+# Arduino Nano33
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="8057", SYMLINK+="arduino_nano33"
+
+# Arduino Nano33 Bootloader
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0057", SYMLINK+="arduino_nano33"
+
 # Arduino Uno
 SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0243", SYMLINK+="arduino_uno"
