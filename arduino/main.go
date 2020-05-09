@@ -48,7 +48,7 @@ var (
 
 const (
 	maxanalog       = 65535
-	allowedvariance = 256
+	allowedvariance = 512
 )
 
 func main() {
