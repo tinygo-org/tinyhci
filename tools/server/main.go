@@ -43,5 +43,7 @@ func main() {
 			log.Printf("The output is %s\n", out)
 		}
 	})
+
+	log.Println("Starting TinyHCI server...")
 	http.ListenAndServe(":8000", nil)
 }
