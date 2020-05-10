@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	path = "/webhooks"
+	path    = "/webhooks"
+	testCmd = "make test-itsybitsy-m4"
 )
 
 func main() {
@@ -50,9 +51,10 @@ func processBuilds(builds chan string) {
 		select {
 		case build := <-builds:
 			log.Printf("Running tests for commit %s\n", build)
-			out, err := exec.Command("sh", "-c", "make test-itsybitsy-m4").Output()
+			out, err := exec.Command("sh", "-c", testCmd).CombinedOutput()
 			if err != nil {
 				log.Println(err)
+				log.Println(string(out))
 				continue
 			}
 			log.Printf(string(out))
