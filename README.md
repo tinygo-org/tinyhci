@@ -8,6 +8,20 @@ Currently implemented integration tests for:
 - Arduino Nano33-IoT
 - Arduino Uno
 
+## Hardware Continuous Integration (HCI) System
+
+The TinyGo HCI system is a web service connected to the Github webhook interface.
+
+It listens for pull requests to the target repository, and then will do the following:
+
+- [ ] Pull down the latest binary build of TinyGo based on the pull request
+- [ ] Create a "starting" status for each fof the MCU boards
+- [ ] Create a gist to contain the test output
+- [x] Execute the hardware test suite for each of the supported microcontroller boards
+- [ ] Update the gist with the test output, and update the PR status for each MCU to either "success" or "failed" based on the pass/fail for each MCU's test suite, as the tests are executed by the HCI system.
+
+Thanks to @maruel for the work on GoHCI which has been an influence on the code in this part of the project.
+
 ## How it works
 
 The makefile compiles the test code, flashes it onto the connected board, and then connects to the microcontroller serial port. The test program waits for a keypress to be detected on the serial port, and then runs thru the hardware integration tests, outputting the results back out to the serial port.
@@ -24,8 +38,7 @@ digitalWriteOn: pass
 digitalWriteOff: pass
 analogReadVoltage: pass
 analogReadGround: pass
-analogReadHalfVoltage: fail
-  expected: 'val <= 65535/2+256 && val >= 65535/2-256', actual: 33024
+analogReadHalfVoltage: pass
 i2cConnectionNoPower: pass
 i2cConnectionPower: pass
 Tests complete.
