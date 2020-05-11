@@ -1,7 +1,7 @@
 [Unit]
 Description=TinyGo HCI service
 ConditionPathExists=/home/upsquared/integration-tests/build/server
-After=NetworkManager.service
+After=networking.service
 
 [Service]
 Type=simple
