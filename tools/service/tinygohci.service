@@ -1,7 +1,7 @@
 [Unit]
 Description=TinyGo HCI service
 ConditionPathExists=/home/upsquared/integration-tests/build/server
-After=network.target
+After=NetworkManager.service
 
 [Service]
 Type=simple
@@ -13,8 +13,9 @@ RestartSec=10
 WorkingDirectory=/home/upsquared/integration-tests
 ExecStart=/home/upsquared/integration-tests/build/server
 
-# set this to the value you need by using "sudo systemctl edit tinygohci" to edit the override file
-EnvironmentFile=/etc/systemd/system/tinygohci.service.d/env
+# set the GHKEY value you need by using "sudo systemctl edit tinygohci" to edit the override file.
+# see the service/README.md file for more details
+Environment="GHKEY=1234"
 
 [Install]
 WantedBy=multi-user.target

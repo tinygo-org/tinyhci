@@ -90,18 +90,22 @@ server: clean-server build/server
 
 install-web-service:
 	sudo cp tools/service/tinygohci.service /etc/systemd/system/
+	sudo chmod 644 /etc/systemd/system/tinygohci.service
 
 install-ngrok-service:
 	sudo cp tools/service/ngrok.service /etc/systemd/system/
+	sudo chmod 644 /etc/systemd/system/ngrok.service
 
 start-web-service:
-	sudo systemctl enable tinygohci.service && systemctl start tinygohci.service
+	sudo systemctl start tinygohci
+	sudo systemctl enable tinygohci
 
 stop-web-service:
 	sudo systemctl stop tinygohci.service
 
 start-ngrok-service:
-	sudo systemctl enable ngrok.service && systemctl start ngrok.service
+	sudo systemctl start ngrok
+	sudo systemctl enable ngrok
 
 stop-ngrok-service:
 	sudo systemctl stop ngrok.service
