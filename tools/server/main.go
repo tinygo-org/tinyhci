@@ -4,10 +4,12 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 
 	"net/http"
 
-	"gopkg.in/go-playground/webhooks.v5/github"
+	"github.com/bradleyfalzon/ghinstallation"
+	"github.com/google/go-github/v31/github"
 )
 
 const (
@@ -15,30 +17,63 @@ const (
 	testCmd = "make test-itsybitsy-m4"
 )
 
+var (
+	client *github.Client
+)
+
 func main() {
 	ghkey := os.Getenv("GHKEY")
 	if ghkey == "" {
-		panic("You must set an ENV var with your GHKEY")
+		log.Fatal("You must set an ENV var with your GHKEY")
+	}
+
+	ghkeyfile := os.Getenv("GHKEYFILE")
+	if ghkeyfile == "" {
+		log.Fatal("You must set an ENV var with your GHKEYFILE")
+	}
+
+	aid := os.Getenv("GHAPPID")
+	if aid == "" {
+		log.Fatal("You must set an ENV var with your GHAPPID")
+	}
+
+	iid := os.Getenv("GHINSTALLID")
+	if iid == "" {
+		log.Fatal("You must set an ENV var with your GHINSTALLID")
+	}
+
+	appid, err := strconv.Atoi(aid)
+	if err != nil {
+		log.Fatal("Invalid Github app id")
+	}
+
+	installid, err := strconv.Atoi(iid)
+	if err != nil {
+		log.Fatal("Invalid Github install id")
+	}
+
+	client, err = authenticateClient(int64(appid), int64(installid), ghkeyfile)
+	if err != nil {
+		log.Println(err)
 	}
 
 	builds := make(chan string)
-
 	go processBuilds(builds)
 
-	hook, _ := github.New(github.Options.Secret(ghkey))
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		payload, err := hook.Parse(r, github.PushEvent)
+		payload, err := github.ValidatePayload(r, []byte(ghkey))
 		if err != nil {
-			if err == github.ErrEventNotFound {
-				// ok event wasn't one of the ones asked to be parsed
-				log.Println("Not the event you are looking for")
-				return
-			}
+			log.Println("Invalid webhook payload")
+			return
 		}
-		switch payload.(type) {
-		case github.PushPayload:
-			push := payload.(github.PushPayload)
-			builds <- push.After
+		event, err := github.ParseWebHook(github.WebHookType(r), payload)
+		if err != nil {
+			log.Println("Invalid webhook event")
+			return
+		}
+		switch event := event.(type) {
+		case *github.PushEvent:
+			builds <- *event.After
 		}
 	})
 
@@ -51,13 +86,36 @@ func processBuilds(builds chan string) {
 		select {
 		case build := <-builds:
 			log.Printf("Running tests for commit %s\n", build)
+			startCheckRun()
+
 			out, err := exec.Command("sh", "-c", testCmd).CombinedOutput()
 			if err != nil {
 				log.Println(err)
 				log.Println(string(out))
+				failCheckRun()
 				continue
 			}
+			passCheckRun()
 			log.Printf(string(out))
 		}
 	}
+}
+
+func authenticateClient(appid, installid int64, privatekeyfile string) (*github.Client, error) {
+	tr := http.DefaultTransport
+	itr, err := ghinstallation.NewKeyFromFile(tr, appid, installid, privatekeyfile)
+	if err != nil {
+		return nil, err
+	}
+
+	return github.NewClient(&http.Client{Transport: itr}), nil
+}
+
+func startCheckRun() {
+}
+
+func passCheckRun() {
+}
+
+func failCheckRun() {
 }
