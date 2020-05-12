@@ -10,17 +10,16 @@ Currently implemented integration tests for:
 
 ## Hardware Continuous Integration (HCI) System
 
-The TinyGo HCI system is a web service connected to the Github webhook interface.
+The TinyGo HCI system is a Github application that uses the webhook interface.
 
 It listens for pull requests to the target repository, and then will do the following:
 
 - [ ] Pull down the latest binary build of TinyGo based on the pull request
-- [ ] Create a "starting" status for each fof the MCU boards
-- [ ] Create a gist to contain the test output
-- [x] Execute the hardware test suite for each of the supported microcontroller boards
-- [ ] Update the gist with the test output, and update the PR status for each MCU to either "success" or "failed" based on the pass/fail for each MCU's test suite, as the tests are executed by the HCI system.
+- [ ] Create a check run for the PR (https://developer.github.com/v3/checks/)
+- [x] Execute the hardware tests for each of the supported microcontroller boards
+- [ ] Update the check run with the test results for each MCU to either "success" or "failed" based on the pass/fail for each MCU's as they are executed by the HCI system.
 
-Thanks to @maruel for the work on GoHCI which has been an influence on the code in this part of the project.
+Thanks to @maruel for the work on GoHCI which has been an influence on this project.
 
 ## How it works
 
