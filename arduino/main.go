@@ -30,10 +30,10 @@ import (
 
 var (
 	// used by digital tests
-	readV    machine.Pin = 11
-	readG    machine.Pin = 12
-	readpin  machine.Pin = 9
-	writepin machine.Pin = 10
+	readV    = machine.D11
+	readG    = machine.D12
+	readpin  = machine.D9
+	writepin = machine.D10
 
 	// used by analog tests
 	analogV    = machine.ADC{machine.ADC0}
