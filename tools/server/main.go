@@ -74,7 +74,20 @@ func main() {
 		switch event := event.(type) {
 		case *github.PushEvent:
 			builds <- *event.After
+		default:
+			log.Println("Not the event you are looking for")
 		}
+	})
+
+	http.HandleFunc("/buildhook", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Got the buildhook:")
+		bi, err := parseBuildInfo(r)
+		if err != nil {
+			log.Println(err)
+		}
+
+		log.Printf("Build Info: %+v\n", bi)
+		return
 	})
 
 	log.Println("Starting TinyHCI server...")
@@ -103,7 +116,7 @@ func processBuilds(builds chan string) {
 
 func authenticateClient(appid, installid int64, privatekeyfile string) (*github.Client, error) {
 	tr := http.DefaultTransport
-	itr, err := ghinstallation.NewKeyFromFile(tr, appid, installid, privatekeyfile)
+	itr, err := ghinstallation.NewKeyFromFile(tr, appid, installid, "keys/"+privatekeyfile)
 	if err != nil {
 		return nil, err
 	}
