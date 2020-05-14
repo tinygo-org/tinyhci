@@ -14,6 +14,8 @@ import (
 )
 
 const (
+	ghorg   = "tinygo-org"
+	ghrepo  = "tinygo"
 	path    = "/webhooks"
 	testCmd = "make test-itsybitsy-m4"
 )
@@ -25,6 +27,7 @@ type Build struct {
 
 var (
 	client *github.Client
+	runs   map[string]*github.CheckRun
 )
 
 func main() {
@@ -62,6 +65,8 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
+
+	runs = make(map[string]*github.CheckRun)
 
 	builds := make(chan *Build)
 	go processBuilds(builds)
@@ -130,10 +135,10 @@ func processBuilds(builds chan *Build) {
 			if err != nil {
 				log.Println(err)
 				log.Println(string(out))
-				failCheckRun(build.sha)
+				failCheckRun(build.sha, string(out))
 				continue
 			}
-			passCheckRun(build.sha)
+			passCheckRun(build.sha, string(out))
 			log.Printf(string(out))
 		}
 	}
