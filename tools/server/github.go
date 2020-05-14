@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/bradleyfalzon/ghinstallation"
@@ -15,4 +16,20 @@ func authenticateGithubClient(appid, installid int64, privatekeyfile string) (*g
 	}
 
 	return github.NewClient(&http.Client{Transport: itr}), nil
+}
+
+func pendingCheckRun(sha string) {
+	log.Printf("Github check run pending for %s\n", sha)
+}
+
+func startCheckRun(sha string) {
+	log.Printf("Github check run starting for %s\n", sha)
+}
+
+func passCheckRun(sha string) {
+	log.Printf("Github check run pass for commit %s\n", sha)
+}
+
+func failCheckRun(sha string) {
+	log.Printf("Github check run fail for commit %s\n", sha)
 }

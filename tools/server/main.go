@@ -79,18 +79,18 @@ func main() {
 		}
 		switch event := event.(type) {
 		case *github.PushEvent:
-			log.Println("github commit", *event.After)
 			pendingCheckRun(*event.After)
 		default:
-			log.Println("Not the event you are looking for")
+			log.Println("Unexpected Github event")
 		}
 	})
 
 	http.HandleFunc("/buildhook", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Got the buildhook:")
+		log.Println("CircleCI buildhook received.")
 		bi, err := parseBuildInfo(r)
 		if err != nil {
 			log.Println(err)
+			return
 		}
 
 		log.Printf("Build Info: %+v\n", bi)
@@ -99,7 +99,6 @@ func main() {
 			log.Println(err)
 			return
 		}
-		log.Println("tinygo download file at", url)
 
 		builds <- &Build{sha: bi.VcsRevision, binaryUrl: url}
 	})
@@ -115,15 +114,12 @@ func processBuilds(builds chan *Build) {
 			log.Printf("Starting tests for commit %s\n", build.sha)
 			startCheckRun(build.sha)
 
-			// download new tinygo binary
 			log.Printf("Downloading new TinyGo from %s\n", build.binaryUrl)
 			downloadFile("/tmp/tinygo.tar.gz", build.binaryUrl)
 
-			// install binary
 			log.Printf("Installing TinyGo from commit %s\n", build.sha)
 			installBinary("/tmp/tinygo.tar.gz")
 
-			// run tests
 			log.Printf("Running tests for commit %s\n", build.sha)
 			out, err := exec.Command("sh", "-c", testCmd).CombinedOutput()
 			if err != nil {
@@ -138,41 +134,23 @@ func processBuilds(builds chan *Build) {
 	}
 }
 
-func pendingCheckRun(sha string) {
-}
-
-func startCheckRun(sha string) {
-}
-
-func passCheckRun(sha string) {
-	log.Printf("Tests pass for commit %s\n", sha)
-}
-
-func failCheckRun(sha string) {
-	log.Printf("Tests fail for commit %s\n", sha)
-}
-
 func downloadFile(filepath string, url string) (err error) {
-	// Create the file
 	out, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	// Check server response
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("bad status: %s", resp.Status)
 	}
 
-	// Writer the body to file
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return err
@@ -180,8 +158,6 @@ func downloadFile(filepath string, url string) (err error) {
 
 	return nil
 }
-
-//tar -xzf /tmp/tinygo.tar.gz -C /usr/local
 
 func installBinary(filename string) error {
 	out, err := exec.Command("tar", "-xzf", filename, "-C", "/usr/local").CombinedOutput()
