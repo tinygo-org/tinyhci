@@ -94,6 +94,11 @@ func main() {
 		}
 
 		log.Printf("Build Info: %+v\n", bi)
+		if bi.Status != "success" {
+			log.Printf("Not running tests for %s status was %s\n", bi.VcsRevision, bi.Status)
+			return
+		}
+
 		url, err := getTinygoBinaryURL(bi.BuildNum)
 		if err != nil {
 			log.Println(err)
