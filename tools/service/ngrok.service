@@ -1,6 +1,6 @@
 [Unit]
 Description=Ngrok
-After=networking.service
+After=NetworkManager.service
 
 [Service]
 Type=simple

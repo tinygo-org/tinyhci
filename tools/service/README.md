@@ -13,5 +13,8 @@ Use `sudo systemctl edit tinygohci` to edit the override settings for the web se
 ```
 [Service]
 Environment="GHKEY=putyourrealkeyhere"
+Environment="GHKEYFILE=putyourrealkeyfilenamehere"
+Environment="GHAPPID=putyourrealappidhere"
+Environment="GHINSTALLID=putyourrealinstallidhere"
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/usr/local/tinygo/bin"
 ```
