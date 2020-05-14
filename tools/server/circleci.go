@@ -3,18 +3,15 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/metanerd/go-circleci"
 )
 
-// BuildInfo is info from CircleCI webhook.
-type BuildInfo struct {
+// CIBuildInfo is info from CircleCI webhook.
+type CIBuildInfo struct {
 	BuildNum    string `json:"build_num"`
 	Branch      string `json:"branch"`
 	Username    string `json:"username"`
@@ -30,7 +27,7 @@ type BuildInfo struct {
 	Status      string `json:"status"`
 }
 
-func parseBuildInfo(r *http.Request) (*BuildInfo, error) {
+func parseBuildInfo(r *http.Request) (*CIBuildInfo, error) {
 	// Read body
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -39,7 +36,7 @@ func parseBuildInfo(r *http.Request) (*BuildInfo, error) {
 	}
 
 	// Unmarshal
-	var bi BuildInfo
+	var bi CIBuildInfo
 	err = json.Unmarshal(b, &bi)
 	if err != nil {
 		return nil, err
@@ -49,7 +46,7 @@ func parseBuildInfo(r *http.Request) (*BuildInfo, error) {
 }
 
 func getTinygoBinaryURL(buildNum string) (string, error) {
-	client := &circleci.Client{} //Token: "YOUR TOKEN"} // Token not required to query info for public projects
+	client := &circleci.Client{}
 	bn, err := strconv.Atoi(buildNum)
 	if err != nil {
 		return "", errors.New("invalid buildnum: " + buildNum)
@@ -63,34 +60,4 @@ func getTinygoBinaryURL(buildNum string) (string, error) {
 		}
 	}
 	return "", errors.New("cannot find DEB file")
-}
-
-func downloadFile(filepath string, url string) (err error) {
-
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Get the data
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Check server response
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("bad status: %s", resp.Status)
-	}
-
-	// Writer the body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

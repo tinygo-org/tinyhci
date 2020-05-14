@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -8,7 +10,6 @@ import (
 
 	"net/http"
 
-	"github.com/bradleyfalzon/ghinstallation"
 	"github.com/google/go-github/v31/github"
 )
 
@@ -16,6 +17,11 @@ const (
 	path    = "/webhooks"
 	testCmd = "make test-itsybitsy-m4"
 )
+
+type Build struct {
+	binaryUrl string
+	sha       string
+}
 
 var (
 	client *github.Client
@@ -52,12 +58,12 @@ func main() {
 		log.Fatal("Invalid Github install id")
 	}
 
-	client, err = authenticateClient(int64(appid), int64(installid), ghkeyfile)
+	client, err = authenticateGithubClient(int64(appid), int64(installid), ghkeyfile)
 	if err != nil {
 		log.Println(err)
 	}
 
-	builds := make(chan string)
+	builds := make(chan *Build)
 	go processBuilds(builds)
 
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +79,8 @@ func main() {
 		}
 		switch event := event.(type) {
 		case *github.PushEvent:
-			builds <- *event.After
+			log.Println("github commit", *event.After)
+			pendingCheckRun(*event.After)
 		default:
 			log.Println("Not the event you are looking for")
 		}
@@ -93,47 +100,95 @@ func main() {
 			return
 		}
 		log.Println("tinygo download file at", url)
+
+		builds <- &Build{sha: bi.VcsRevision, binaryUrl: url}
 	})
 
 	log.Println("Starting TinyHCI server...")
 	http.ListenAndServe(":8000", nil)
 }
 
-func processBuilds(builds chan string) {
+func processBuilds(builds chan *Build) {
 	for {
 		select {
 		case build := <-builds:
-			log.Printf("Running tests for commit %s\n", build)
-			startCheckRun()
+			log.Printf("Starting tests for commit %s\n", build.sha)
+			startCheckRun(build.sha)
 
+			// download new tinygo binary
+			log.Printf("Downloading new TinyGo from %s\n", build.binaryUrl)
+			downloadFile("/tmp/tinygo_amd64.deb", build.binaryUrl)
+
+			// install binary
+			log.Printf("Installing TinyGo from commit %s\n", build.sha)
+			installBinary("/tmp/tinygo_amd64.deb")
+
+			// run tests
+			log.Printf("Running tests for commit %s\n", build.sha)
 			out, err := exec.Command("sh", "-c", testCmd).CombinedOutput()
 			if err != nil {
 				log.Println(err)
 				log.Println(string(out))
-				failCheckRun()
+				failCheckRun(build.sha)
 				continue
 			}
-			passCheckRun()
+			passCheckRun(build.sha)
 			log.Printf(string(out))
 		}
 	}
 }
 
-func authenticateClient(appid, installid int64, privatekeyfile string) (*github.Client, error) {
-	tr := http.DefaultTransport
-	itr, err := ghinstallation.NewKeyFromFile(tr, appid, installid, "keys/"+privatekeyfile)
+func pendingCheckRun(sha string) {
+}
+
+func startCheckRun(sha string) {
+}
+
+func passCheckRun(sha string) {
+	log.Printf("Tests pass for commit %s\n", sha)
+}
+
+func failCheckRun(sha string) {
+	log.Printf("Tests fail for commit %s\n", sha)
+}
+
+func downloadFile(filepath string, url string) (err error) {
+	// Create the file
+	out, err := os.Create(filepath)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Check server response
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad status: %s", resp.Status)
 	}
 
-	return github.NewClient(&http.Client{Transport: itr}), nil
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func startCheckRun() {
-}
+func installBinary(filename string) error {
+	// run dpkg here
+	out, err := exec.Command("sh", "-c", "dpkg -i", filename).CombinedOutput()
+	if err != nil {
+		log.Println(err)
+		log.Println(string(out))
+		return err
+	}
 
-func passCheckRun() {
-}
-
-func failCheckRun() {
+	return nil
 }
