@@ -117,7 +117,7 @@ func processBuilds(builds chan *Build) {
 
 			// download new tinygo binary
 			log.Printf("Downloading new TinyGo from %s\n", build.binaryUrl)
-			downloadFile("tmp/tinygo.tar.gz", build.binaryUrl)
+			downloadFile("/tmp/tinygo.tar.gz", build.binaryUrl)
 
 			// install binary
 			log.Printf("Installing TinyGo from commit %s\n", build.sha)
