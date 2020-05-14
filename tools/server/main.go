@@ -87,8 +87,12 @@ func main() {
 		}
 
 		log.Printf("Build Info: %+v\n", bi)
-		getTinygoBinary(bi.BuildNum)
-		return
+		url, err := getTinygoBinaryURL(bi.BuildNum)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		log.Println("tinygo download file at", url)
 	})
 
 	log.Println("Starting TinyHCI server...")

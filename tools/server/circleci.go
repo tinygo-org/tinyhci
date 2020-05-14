@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/metanerd/go-circleci"
@@ -45,15 +48,49 @@ func parseBuildInfo(r *http.Request) (*BuildInfo, error) {
 	return &bi, nil
 }
 
-func getTinygoBinary(buildNum string) {
+func getTinygoBinaryURL(buildNum string) (string, error) {
 	client := &circleci.Client{} //Token: "YOUR TOKEN"} // Token not required to query info for public projects
 	bn, err := strconv.Atoi(buildNum)
 	if err != nil {
-		log.Println("invalid buildnum:", buildNum)
+		return "", errors.New("invalid buildnum: " + buildNum)
 	}
 	artifacts, _ := client.ListBuildArtifacts("github", "tinygo-org", "tinygo", bn)
 
 	for _, a := range artifacts {
-		log.Printf("%s: %s\n", a.Path, a.URL)
+		// we're looking for the .deb file
+		if a.Path == "tmp/tinygo_amd64.deb" {
+			return a.URL, nil
+		}
 	}
+	return "", errors.New("cannot find DEB file")
+}
+
+func downloadFile(filepath string, url string) (err error) {
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Check server response
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad status: %s", resp.Status)
+	}
+
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
