@@ -117,11 +117,11 @@ func processBuilds(builds chan *Build) {
 
 			// download new tinygo binary
 			log.Printf("Downloading new TinyGo from %s\n", build.binaryUrl)
-			downloadFile("/tmp/tinygo_amd64.deb", build.binaryUrl)
+			downloadFile("tmp/tinygo.tar.gz", build.binaryUrl)
 
 			// install binary
 			log.Printf("Installing TinyGo from commit %s\n", build.sha)
-			installBinary("/tmp/tinygo_amd64.deb")
+			installBinary("/tmp/tinygo.tar.gz")
 
 			// run tests
 			log.Printf("Running tests for commit %s\n", build.sha)
@@ -181,9 +181,10 @@ func downloadFile(filepath string, url string) (err error) {
 	return nil
 }
 
+//tar -xzf /tmp/tinygo.tar.gz -C /usr/local
+
 func installBinary(filename string) error {
-	// run dpkg here
-	out, err := exec.Command("sh", "-c", "dpkg -i", filename).CombinedOutput()
+	out, err := exec.Command("tar", "-xzf", filename, "-C", "/usr/local").CombinedOutput()
 	if err != nil {
 		log.Println(err)
 		log.Println(string(out))

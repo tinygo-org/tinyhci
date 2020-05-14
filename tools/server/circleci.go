@@ -55,7 +55,7 @@ func getTinygoBinaryURL(buildNum string) (string, error) {
 
 	for _, a := range artifacts {
 		// we're looking for the .deb file
-		if a.Path == "tmp/tinygo_amd64.deb" {
+		if a.Path == "tmp/tinygo.linux-amd64.tar.gz" {
 			return a.URL, nil
 		}
 	}

@@ -1,6 +1,6 @@
 [Unit]
 Description=TinyGo HCI service
-ConditionPathExists=/home/upsquared/integration-tests/build/server
+ConditionPathExists=/home/upsquared/integration-tests/build/tinygohci
 After=NetworkManager.service
 
 [Service]
@@ -11,7 +11,7 @@ Restart=on-failure
 RestartSec=10
 
 WorkingDirectory=/home/upsquared/integration-tests
-ExecStart=/home/upsquared/integration-tests/build/server
+ExecStart=/home/upsquared/integration-tests/build/tinygohci
 
 # set the GHKEY value you need by using "sudo systemctl edit tinygohci" to edit the override file.
 # see the service/README.md file for more details

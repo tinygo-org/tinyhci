@@ -48,17 +48,18 @@ endif
 
 install-tinygo:
 ifndef TINYGOINSTALLED
-	wget "https://github.com/tinygo-org/tinygo/releases/download/v$(TARGET_TINYGOVERSION)/tinygo_$(TARGET_TINYGOVERSION)_amd64.deb"
-	sudo dpkg -i "tinygo_$(TARGET_TINYGOVERSION)_amd64.deb"
+	wget "https://github.com/tinygo-org/tinygo/releases/download/v$(TARGET_TINYGOVERSION)/tinygo$(TARGET_TINYGOVERSION).linux-amd64.tar.gz" -O /tmp/tinygo.tar.gz
+	tar -xzf /tmp/tinygo.tar.gz -C /usr/local
 	@echo "# add TinyGo to path" >> ~/.bashrc
-	@echo 'export PATH=$PATH:/usr/local/tinygo/bin' >> ~/.bashrc
+	@echo 'export PATH="$PATH:/usr/local/tinygo/bin\"' >> ~/.bashrc
 	source ~/.bashrc
 endif
 	echo "$(GREEN)TinyGo is now installed:$(NOCOLOR)\n"
 	tinygo version
 
 update-tinygo:
-	@echo "Not yet"
+	wget "$(TINYGOUPDATE)" -O /tmp/tinygo.tar.gz
+	tar -xzf /tmp/tinygo.tar.gz -C /usr/local
 
 install-bossa:
 	sudo apt install libreadline-dev libwxgtk3.0-*
@@ -71,22 +72,22 @@ build/testrunner:
 	mkdir -p build
 	go build -o build/testrunner tools/testrunner/*
 
-build/server:
+build/tinygohci:
 	mkdir -p build
-	go build -o build/server tools/server/*
+	go build -o build/tinygohci tools/server/*
 
 clean:
 	rm -rf build
 
-clean-server:
-	rm -f build/server
+clean-tinygohci:
+	rm -f build/tinygohci
 
 clean-testrunner:
 	rm -f build/testrunner
 
 testrunner: clean-testrunner build/testrunner
 
-server: clean-server build/server
+tinygohci: clean-tinygohci build/tinygohci
 
 install-web-service:
 	sudo cp tools/service/tinygohci.service /etc/systemd/system/
