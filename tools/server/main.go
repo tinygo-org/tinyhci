@@ -87,6 +87,7 @@ func main() {
 		}
 
 		log.Printf("Build Info: %+v\n", bi)
+		getTinygoBinary(bi.BuildNum)
 		return
 	})
 

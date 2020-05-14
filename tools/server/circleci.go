@@ -3,12 +3,15 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
+
+	"github.com/metanerd/go-circleci"
 )
 
-// BuildInfo is info from CircleCI.
+// BuildInfo is info from CircleCI webhook.
 type BuildInfo struct {
-	BuildNum    string `json:"build_num"`
+	BuildNum    int    `json:"build_num"`
 	Branch      string `json:"branch"`
 	Username    string `json:"username"`
 	Job         string `json:"job"`
@@ -39,4 +42,13 @@ func parseBuildInfo(r *http.Request) (*BuildInfo, error) {
 	}
 
 	return &bi, nil
+}
+
+func getTinygoBinary(buildNum int) {
+	client := &circleci.Client{} //Token: "YOUR TOKEN"} // Token not required to query info for public projects
+	artifacts, _ := client.ListBuildArtifacts("github", "tinygo-org", "tinygo", buildNum)
+
+	for _, a := range artifacts {
+		log.Printf("%s: %s\n", a.Path, a.URL)
+	}
 }
