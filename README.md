@@ -14,16 +14,20 @@ The TinyGo HCI system is a Github application that uses the webhook interface.
 
 It listens for pull requests to the target repository, and then will do the following:
 
-- [ ] Pull down the latest binary build of TinyGo based on the pull request
+- [x] Download and install the binary build of TinyGo based on the pull request SHA
 - [ ] Create a check run for the PR (https://developer.github.com/v3/checks/)
 - [x] Execute the hardware tests for each of the supported microcontroller boards
 - [ ] Update the check run with the test results for each MCU to either "success" or "failed" based on the pass/fail for each MCU's as they are executed by the HCI system.
 
-Thanks to @maruel for the work on GoHCI which has been an influence on this project.
+## Test Runner
 
-## How it works
+The process of running the hardware tests is:
 
-The makefile compiles the test code, flashes it onto the connected board, and then connects to the microcontroller serial port. The test program waits for a keypress to be detected on the serial port, and then runs thru the hardware integration tests, outputting the results back out to the serial port.
+- compile the test code for that MCU
+- flash test code onto the MCU
+- MCU test program waits for a keypress to be detected on the serial port
+- HCI system connects to the MCU via serial port, and sends the key code to start the test run
+- MCU runs thru the hardware integration tests, outputting the results back out to the serial port
 
 ```
 $ make test-itsybitsy-m4 
@@ -65,4 +69,10 @@ TODO
 
 ### UART
 
-TODO
+
+## Thanks
+
+Thanks to @maruel for the work on GoHCI which has been an influence on this project. 
+
+Also thanks to Github for providing the free code hosting and CircleCI for providing the CI services that are the foundation for this project.
+
