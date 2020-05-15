@@ -52,7 +52,7 @@ func startCheckRun(sha string) {
 func passCheckRun(sha, output string) {
 	log.Printf("Github check run pass for commit %s\n", sha)
 	title := "TinyGo HCI"
-	summary := "Hardware CI tests have failed."
+	summary := "Hardware CI tests have passed."
 	status := "completed"
 	conclusion := "success"
 	timestamp := github.Timestamp{Time: time.Now()}
