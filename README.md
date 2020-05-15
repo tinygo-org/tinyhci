@@ -69,6 +69,21 @@ TODO
 
 ### UART
 
+## Docker containerized builds
+
+We run each set of checks using a docker container with the associated `tinygo` binary for simplicity and greater security.
+
+To build it:
+
+```
+docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://13064-136505169-gh.circle-artifacts.com/0/tmp/tinygo.linux-amd64.tar.gz .
+```
+
+Now we can use the `tinygohci:latest` image to build/flash our program.
+
+```
+docker run --device=/dev/ttyACM0 -v /media:/media:shared tinygohci:latest tinygo flash -target circuitplay-express examples/blinky1
+```
 
 ## Thanks
 
