@@ -55,7 +55,7 @@ func passCheckRun(sha, output string) {
 	summary := "Hardware CI tests have failed."
 	status := "completed"
 	conclusion := "success"
-	timestamp := github.Timestamp{time.Now()}
+	timestamp := github.Timestamp{Time: time.Now()}
 	if run, ok := runs[sha]; ok {
 		ro := github.CheckRunOutput{
 			Title:   &title,
@@ -84,7 +84,7 @@ func failCheckRun(sha, output string) {
 	summary := "Hardware CI tests have failed."
 	status := "completed"
 	conclusion := "failure"
-	timestamp := github.Timestamp{time.Now()}
+	timestamp := github.Timestamp{Time: time.Now()}
 	if run, ok := runs[sha]; ok {
 		ro := github.CheckRunOutput{
 			Title:   &title,

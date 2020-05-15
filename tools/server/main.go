@@ -13,24 +13,40 @@ import (
 	"github.com/google/go-github/v31/github"
 )
 
-const (
-	ghorg   = "tinygo-org"
-	ghrepo  = "tinygo"
-	path    = "/webhooks"
-	testCmd = "make test-itsybitsy-m4"
-)
-
+// Build is a specific build to be tested.
 type Build struct {
-	binaryUrl string
+	binaryURL string
 	sha       string
 }
 
+const (
+	debugSkipBinaryInstall = false // set to true to use the already installed tinygo
+)
+
 var (
+	// these will be overwritten by the ENV vars of the same name
+	ghorg  = "tinygo-org"
+	ghrepo = "tinygo"
+
+	ghwebhookpath = "/webhooks"
+	ciwebhookpath = "/buildhook"
+	testCmd       = "make test-itsybitsy-m4"
+
 	client *github.Client
 	runs   map[string]*github.CheckRun
 )
 
 func main() {
+	ghorg = os.Getenv("GHORG")
+	if ghorg == "" {
+		log.Fatal("You must set an ENV var with your GHORG")
+	}
+
+	ghrepo = os.Getenv("GHREPO")
+	if ghrepo == "" {
+		log.Fatal("You must set an ENV var with your GHREPO")
+	}
+
 	ghkey := os.Getenv("GHKEY")
 	if ghkey == "" {
 		log.Fatal("You must set an ENV var with your GHKEY")
@@ -71,7 +87,7 @@ func main() {
 	builds := make(chan *Build)
 	go processBuilds(builds)
 
-	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(ghwebhookpath, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := github.ValidatePayload(r, []byte(ghkey))
 		if err != nil {
 			log.Println("Invalid webhook payload")
@@ -90,7 +106,7 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/buildhook", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(ciwebhookpath, func(w http.ResponseWriter, r *http.Request) {
 		log.Println("CircleCI buildhook received.")
 		bi, err := parseBuildInfo(r)
 		if err != nil {
@@ -100,7 +116,7 @@ func main() {
 
 		log.Printf("Build Info: %+v\n", bi)
 		if bi.Status != "success" {
-			log.Printf("Not running tests for %s status was %s\n", bi.VcsRevision, bi.Status)
+			log.Printf("Not running tests for %s status was %s\n", bi.VCSRevision, bi.Status)
 			return
 		}
 
@@ -110,7 +126,7 @@ func main() {
 			return
 		}
 
-		builds <- &Build{sha: bi.VcsRevision, binaryUrl: url}
+		builds <- &Build{sha: bi.VCSRevision, binaryURL: url}
 	})
 
 	log.Println("Starting TinyHCI server...")
@@ -124,11 +140,13 @@ func processBuilds(builds chan *Build) {
 			log.Printf("Starting tests for commit %s\n", build.sha)
 			startCheckRun(build.sha)
 
-			log.Printf("Downloading new TinyGo from %s\n", build.binaryUrl)
-			downloadFile("/tmp/tinygo.tar.gz", build.binaryUrl)
+			if !debugSkipBinaryInstall {
+				log.Printf("Downloading new TinyGo from %s\n", build.binaryURL)
+				downloadFile("/tmp/tinygo.tar.gz", build.binaryURL)
 
-			log.Printf("Installing TinyGo from commit %s\n", build.sha)
-			installBinary("/tmp/tinygo.tar.gz")
+				log.Printf("Installing TinyGo from commit %s\n", build.sha)
+				installBinary("/tmp/tinygo.tar.gz")
+			}
 
 			log.Printf("Running tests for commit %s\n", build.sha)
 			out, err := exec.Command("sh", "-c", testCmd).CombinedOutput()

@@ -10,20 +10,21 @@ import (
 	"github.com/metanerd/go-circleci"
 )
 
-// CIBuildInfo is info from CircleCI webhook.
+// CIBuildInfo is info from CircleCI webhook sent by the CircleCI Webhook Orb
+// https://github.com/eddiewebb/circleci-webhook-orb
 type CIBuildInfo struct {
 	BuildNum    string `json:"build_num"`
 	Branch      string `json:"branch"`
 	Username    string `json:"username"`
 	Job         string `json:"job"`
-	BuildUrl    string `json:"build_url"`
-	VcsRevision string `json:"vcs_revision"`
+	BuildURL    string `json:"build_url"`
+	VCSRevision string `json:"vcs_revision"`
 	RepoName    string `json:"reponame"`
-	WorkflowId  string `json:"workflow_id"`
-	WorkflowUrl string `json:"workflow_url"`
+	WorkflowID  string `json:"workflow_id"`
+	WorkflowURL string `json:"workflow_url"`
 	PullRequest string `json:"pull_request"`
 	User        string `json:"user"`
-	ApiLink     string `json:"api_link"`
+	APILink     string `json:"api_link"`
 	Status      string `json:"status"`
 }
 
@@ -46,18 +47,22 @@ func parseBuildInfo(r *http.Request) (*CIBuildInfo, error) {
 }
 
 func getTinygoBinaryURL(buildNum string) (string, error) {
+	if debugSkipBinaryInstall {
+		return "skipping", nil
+	}
+
 	client := &circleci.Client{}
 	bn, err := strconv.Atoi(buildNum)
 	if err != nil {
 		return "", errors.New("invalid buildnum: " + buildNum)
 	}
-	artifacts, _ := client.ListBuildArtifacts("github", "tinygo-org", "tinygo", bn)
+	artifacts, _ := client.ListBuildArtifacts("github", ghorg, ghrepo, bn)
 
 	for _, a := range artifacts {
-		// we're looking for the .deb file
+		// we're looking for the .tar.gz file
 		if a.Path == "tmp/tinygo.linux-amd64.tar.gz" {
 			return a.URL, nil
 		}
 	}
-	return "", errors.New("cannot find DEB file")
+	return "", errors.New("cannot find TinyGo build artifact file")
 }
