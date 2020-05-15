@@ -20,7 +20,7 @@ type Build struct {
 }
 
 const (
-	debugSkipBinaryInstall = false // set to true to use the already installed tinygo
+	debugSkipBinaryInstall = true // set to true to use the already installed tinygo
 )
 
 var (
@@ -149,7 +149,7 @@ func processBuilds(builds chan *Build) {
 			}
 
 			log.Printf("Running tests for commit %s\n", build.sha)
-			out, err := exec.Command("sh", "-c", testCmd).CombinedOutput()
+			out, err := exec.Command("sh", "-c", testCmd).Output()
 			if err != nil {
 				log.Println(err)
 				log.Println(string(out))
