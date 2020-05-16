@@ -179,8 +179,14 @@ func buildDocker(url string) error {
 }
 
 func flash(board Board, sha string) error {
-	cmd := fmt.Sprintf("docker run --device=/dev/%s -v /media:/media:shared -v \"$(PWD):/src\" tinygohci:latest tinygo flash -target %s -port=/dev/%s /src/%s/main.go",
-		board.port, board.target, board.port, board.target)
+	pwd, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+		failCheckRun(sha, err.Error())
+		return err
+	}
+	cmd := fmt.Sprintf("docker run --device=/dev/%s -v /media:/media:shared -v %s:/src tinygohci:latest tinygo flash -target %s -port=/dev/%s /src/%s/main.go",
+		board.port, pwd, board.target, board.port, board.target)
 	out, err := exec.Command(cmd).Output()
 	if err != nil {
 		log.Println(err)
