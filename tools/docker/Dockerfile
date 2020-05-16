@@ -1,7 +1,12 @@
 FROM debian:stable-slim AS tinygohci-base
 
 RUN apt-get clean && apt-get update && \
-    apt-get install -y wget gcc gcc-avr avr-libc git
+    apt-get install -y wget gcc gcc-avr avr-libc git make build-essential libreadline-dev libwxgtk3.0-*
+
+RUN git clone https://github.com/shumatech/BOSSA.git && \
+    cd BOSSA && \
+    make && \
+    cp bin/bossac /usr/local/bin
 
 ENV GO_RELEASE=1.14.2
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
