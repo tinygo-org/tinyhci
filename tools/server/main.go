@@ -156,12 +156,23 @@ func processBuilds(builds chan *Build) {
 			log.Printf("Running checks for commit %s\n", build.sha)
 			for _, board := range boards {
 				log.Printf("Flashing board %s\n", board.displayname)
-				err := flash(board, build.sha)
+				flashout, err := board.flash()
 				if err != nil {
+					log.Println(err)
+					log.Println(flashout)
+					failCheckRun(build.sha, flashout)
 					continue
 				}
+
 				log.Printf("Running tests on board %s\n", board.displayname)
-				runTest(board, build.sha)
+				out, err := board.test()
+				if err != nil {
+					log.Println(err)
+					log.Println(out)
+					failCheckRun(build.sha, out)
+					continue
+				}
+				passCheckRun(build.sha, out)
 			}
 		}
 	}
@@ -178,48 +189,6 @@ func buildDocker(url string) error {
 		log.Println(string(out))
 		return err
 	}
-
-	return nil
-}
-
-func flash(board Board, sha string) error {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Println(err)
-		failCheckRun(sha, err.Error())
-		return err
-	}
-	device := fmt.Sprintf("--device=/dev/%s", board.port)
-	port := fmt.Sprintf("-port=/dev/%s", board.port)
-	file := fmt.Sprintf("/src/%s/main.go", board.target)
-	out, err := exec.Command("docker", "run",
-		device,
-		"-v", "/media:/media:shared",
-		"-v", pwd+":/src",
-		"tinygohci:latest",
-		"tinygo", "flash",
-		"-target", board.target, port, file).CombinedOutput()
-	if err != nil {
-		log.Println(err)
-		log.Println(string(out))
-		failCheckRun(sha, string(out))
-		return err
-	}
-	return nil
-}
-
-func runTest(board Board, sha string) error {
-	port := fmt.Sprintf("/dev/%s", board.port)
-	br := strconv.Itoa(board.baud)
-
-	out, err := exec.Command("./build/testrunner", port, br, "5").CombinedOutput()
-	if err != nil {
-		log.Println(err)
-		log.Println(string(out))
-		failCheckRun(sha, string(out))
-		return err
-	}
-	passCheckRun(sha, string(out))
 
 	return nil
 }
