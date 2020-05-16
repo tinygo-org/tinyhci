@@ -155,10 +155,12 @@ func processBuilds(builds chan *Build) {
 
 			log.Printf("Running checks for commit %s\n", build.sha)
 			for _, board := range boards {
+				log.Printf("Flashing board %s\n", board.displayname)
 				err := flash(board, build.sha)
 				if err != nil {
 					continue
 				}
+				log.Printf("Running tests on board %s\n", board.displayname)
 				runTest(board, build.sha)
 			}
 		}
@@ -167,14 +169,16 @@ func processBuilds(builds chan *Build) {
 
 func buildDocker(url string) error {
 	buildarg := fmt.Sprintf("TINYGO_DOWNLOAD_URL=%s", url)
-	out, err := exec.Command("docker", "build", "-t", "tinygohci", "-f", "tools/docker/Dockerfile", "--build-arg", buildarg, ".").CombinedOutput()
+	out, err := exec.Command("docker", "build",
+		"-t", "tinygohci",
+		"-f", "tools/docker/Dockerfile",
+		"--build-arg", buildarg, ".").CombinedOutput()
 	if err != nil {
 		log.Println(err)
 		log.Println(string(out))
 		return err
 	}
 
-	log.Println(string(out))
 	return nil
 }
 
@@ -185,9 +189,16 @@ func flash(board Board, sha string) error {
 		failCheckRun(sha, err.Error())
 		return err
 	}
-	cmd := fmt.Sprintf("docker run --device=/dev/%s -v /media:/media:shared -v %s:/src tinygohci:latest tinygo flash -target %s -port=/dev/%s /src/%s/main.go",
-		board.port, pwd, board.target, board.port, board.target)
-	out, err := exec.Command(cmd).Output()
+	device := fmt.Sprintf("--device=/dev/%s", board.port)
+	port := fmt.Sprintf("-port=/dev/%s", board.port)
+	file := fmt.Sprintf("/src/%s/main.go", board.target)
+	out, err := exec.Command("docker", "run",
+		device,
+		"-v", "/media:/media:shared",
+		"-v", pwd+":/src",
+		"tinygohci:latest",
+		"tinygo", "flash",
+		"-target", board.target, port, file).CombinedOutput()
 	if err != nil {
 		log.Println(err)
 		log.Println(string(out))
@@ -198,8 +209,10 @@ func flash(board Board, sha string) error {
 }
 
 func runTest(board Board, sha string) error {
-	test := fmt.Sprintf("./build/testrunner /dev/%s %d 5", board.port, board.baud)
-	out, err := exec.Command(test).Output()
+	port := fmt.Sprintf("/dev/%s", board.port)
+	br := strconv.Itoa(board.baud)
+
+	out, err := exec.Command("./build/testrunner", port, br, "5").CombinedOutput()
 	if err != nil {
 		log.Println(err)
 		log.Println(string(out))
