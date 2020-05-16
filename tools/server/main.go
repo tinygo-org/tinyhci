@@ -153,16 +153,14 @@ func processBuilds(builds chan *Build) {
 				continue
 			}
 
-			log.Printf("Running tests for commit %s\n", build.sha)
-			out, err := exec.Command("sh", "-c", testCmd).Output()
-			if err != nil {
-				log.Println(err)
-				log.Println(string(out))
-				failCheckRun(build.sha, string(out))
-				continue
+			log.Printf("Running checks for commit %s\n", build.sha)
+			for _, board := range boards {
+				err := flash(board, build.sha)
+				if err != nil {
+					continue
+				}
+				runTest(board, build.sha)
 			}
-			passCheckRun(build.sha, string(out))
-			log.Printf(string(out))
 		}
 	}
 }
@@ -177,5 +175,32 @@ func buildDocker(url string) error {
 	}
 
 	log.Println(string(out))
+	return nil
+}
+
+func flash(board Board, sha string) error {
+	cmd := fmt.Sprintf("docker run --device=/dev/%s -v /media:/media:shared -v \"$(PWD):/src\" tinygohci:latest tinygo flash -target %s -port=/dev/%s /src/%s/main.go",
+		board.port, board.target, board.port, board.target)
+	out, err := exec.Command(cmd).Output()
+	if err != nil {
+		log.Println(err)
+		log.Println(string(out))
+		failCheckRun(sha, string(out))
+		return err
+	}
+	return nil
+}
+
+func runTest(board Board, sha string) error {
+	test := fmt.Sprintf("./build/testrunner /dev/%s %d 5", board.port, board.baud)
+	out, err := exec.Command(test).Output()
+	if err != nil {
+		log.Println(err)
+		log.Println(string(out))
+		failCheckRun(sha, string(out))
+		return err
+	}
+	passCheckRun(sha, string(out))
+
 	return nil
 }
