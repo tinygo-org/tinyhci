@@ -14,10 +14,11 @@ The TinyGo HCI system is a Github application that uses the webhook interface.
 
 It listens for pull requests to the target repository, and then will do the following:
 
-- [x] Download and install the binary build of TinyGo based on the pull request SHA
-- [ ] Create a check run for the PR (https://developer.github.com/v3/checks/)
-- [x] Execute the hardware tests for each of the supported microcontroller boards
-- [ ] Update the check run with the test results for each MCU to either "success" or "failed" based on the pass/fail for each MCU's as they are executed by the HCI system.
+- [x] Create a new docker image that downloads and installs the binary build of TinyGo based on the pull request SHA
+- [ ] Create a Github check suite for the PR (https://developer.github.com/v3/checks/)
+- [x] Flash the hardware tests onto each of the supported microcontroller boards using the docker image
+- [x] Execute the hardware tests for each of the supported microcontroller boards using the test runner
+- [ ] Create a Github check run in the check suite for this SHA with the test results for each MCU to either "success" or "failed" based on the pass/fail for each as they are executed by the HCI system.
 
 ## Test Runner
 
