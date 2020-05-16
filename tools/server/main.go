@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"net/http"
 
@@ -163,6 +164,8 @@ func processBuilds(builds chan *Build) {
 					failCheckRun(build.sha, flashout)
 					continue
 				}
+
+				time.Sleep(2 * time.Second)
 
 				log.Printf("Running tests on board %s\n", board.displayname)
 				out, err := board.test()
