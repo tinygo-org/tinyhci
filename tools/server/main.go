@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -21,6 +20,7 @@ type Build struct {
 
 const (
 	debugSkipBinaryInstall = true // set to true to use the already installed tinygo
+	officialRelease        = "https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz"
 )
 
 var (
@@ -129,7 +129,7 @@ func main() {
 		builds <- &Build{sha: bi.VCSRevision, binaryURL: url}
 	})
 
-	log.Println("Starting TinyHCI server...")
+	log.Printf("Starting TinyHCI server for %s/%s\n", ghorg, ghrepo)
 	http.ListenAndServe(":8000", nil)
 }
 
@@ -140,12 +140,17 @@ func processBuilds(builds chan *Build) {
 			log.Printf("Starting tests for commit %s\n", build.sha)
 			startCheckRun(build.sha)
 
+			url := officialRelease
 			if !debugSkipBinaryInstall {
-				log.Printf("Downloading new TinyGo from %s\n", build.binaryURL)
-				downloadFile("/tmp/tinygo.tar.gz", build.binaryURL)
+				url = build.binaryURL
+			}
 
-				log.Printf("Installing TinyGo from commit %s\n", build.sha)
-				installBinary("/tmp/tinygo.tar.gz")
+			log.Printf("Building docker image using TinyGo from %s\n", url)
+			err := buildDocker(url)
+			if err != nil {
+				log.Println(err)
+				failCheckRun(build.sha, "docker build failed")
+				continue
 			}
 
 			log.Printf("Running tests for commit %s\n", build.sha)
@@ -162,38 +167,15 @@ func processBuilds(builds chan *Build) {
 	}
 }
 
-func downloadFile(filepath string, url string) (err error) {
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("bad status: %s", resp.Status)
-	}
-
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func installBinary(filename string) error {
-	out, err := exec.Command("tar", "-xzf", filename, "-C", "/usr/local").CombinedOutput()
+func buildDocker(url string) error {
+	buildarg := fmt.Sprintf("TINYGO_DOWNLOAD_URL=%s", url)
+	out, err := exec.Command("docker", "build", "-t", "tinygohci", "-f", "tools/docker/Dockerfile", "--build-arg", buildarg, ".").CombinedOutput()
 	if err != nil {
 		log.Println(err)
 		log.Println(string(out))
 		return err
 	}
 
+	log.Println(string(out))
 	return nil
 }
