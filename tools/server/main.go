@@ -17,6 +17,11 @@ import (
 type Build struct {
 	binaryURL string
 	sha       string
+	suite     *github.CheckSuite
+
+	// runs are all of the checkruns for this build.
+	// key is the target.
+	runs map[string]*github.CheckRun
 }
 
 const (
@@ -31,10 +36,10 @@ var (
 
 	ghwebhookpath = "/webhooks"
 	ciwebhookpath = "/buildhook"
-	testCmd       = "make test-itsybitsy-m4"
 
 	client *github.Client
-	runs   map[string]*github.CheckRun
+	builds map[string]*Build
+	//builds   map[string]*github.CheckRun
 )
 
 func main() {
@@ -83,10 +88,10 @@ func main() {
 		log.Println(err)
 	}
 
-	runs = make(map[string]*github.CheckRun)
+	builds = make(map[string]*Build)
+	buildsCh := make(chan *Build)
 
-	builds := make(chan *Build)
-	go processBuilds(builds)
+	go processBuilds(buildsCh)
 
 	http.HandleFunc(ghwebhookpath, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := github.ValidatePayload(r, []byte(ghkey))
@@ -100,10 +105,17 @@ func main() {
 			return
 		}
 		switch event := event.(type) {
-		case *github.PushEvent:
-			pendingCheckRun(*event.After)
+		// case *github.PushEvent:
+		// 	pendingCheckRun(*event.After)
+		case *github.CheckSuiteEvent:
+			build := &Build{
+				sha:  *event.CheckSuite.HeadSHA,
+				runs: make(map[string]*github.CheckRun),
+			}
+			builds[build.sha] = build
+			build.pendingCheckSuite()
 		default:
-			log.Println("Unexpected Github event")
+			log.Println("Unexpected Github event:", event)
 		}
 	})
 
@@ -127,7 +139,9 @@ func main() {
 			return
 		}
 
-		builds <- &Build{sha: bi.VCSRevision, binaryURL: url}
+		build := builds[bi.VCSRevision]
+		build.binaryURL = url
+		buildsCh <- build
 	})
 
 	log.Printf("Starting TinyHCI server for %s/%s\n", ghorg, ghrepo)
@@ -139,7 +153,7 @@ func processBuilds(builds chan *Build) {
 		select {
 		case build := <-builds:
 			log.Printf("Starting tests for commit %s\n", build.sha)
-			startCheckRun(build.sha)
+			build.startCheckSuite()
 
 			url := officialRelease
 			if !debugSkipBinaryInstall {
@@ -150,7 +164,7 @@ func processBuilds(builds chan *Build) {
 			err := buildDocker(url)
 			if err != nil {
 				log.Println(err)
-				failCheckRun(build.sha, "docker build failed")
+				build.failCheckSuite("docker build failed")
 				continue
 			}
 
@@ -161,7 +175,7 @@ func processBuilds(builds chan *Build) {
 				if err != nil {
 					log.Println(err)
 					log.Println(flashout)
-					failCheckRun(build.sha, flashout)
+					build.failCheckRun(board.target, flashout)
 					continue
 				}
 
@@ -172,10 +186,10 @@ func processBuilds(builds chan *Build) {
 				if err != nil {
 					log.Println(err)
 					log.Println(out)
-					failCheckRun(build.sha, out)
+					build.failCheckRun(board.target, out)
 					continue
 				}
-				passCheckRun(build.sha, out)
+				build.passCheckRun(board.target, out)
 			}
 		}
 	}

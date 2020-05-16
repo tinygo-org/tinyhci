@@ -20,43 +20,57 @@ func authenticateGithubClient(appid, installid int64, privatekeyfile string) (*g
 	return github.NewClient(&http.Client{Transport: itr}), nil
 }
 
-func pendingCheckRun(sha string) {
-	log.Printf("Github check run pending for %s\n", sha)
+func (build Build) pendingCheckSuite() {
+	log.Printf("Github check suite pending for %s\n", build.sha)
+	for _, board := range boards {
+		build.pendingCheckRun(board.target)
+	}
+}
+
+func (build Build) pendingCheckRun(target string) {
+	log.Printf("Github check run pending on board %s for %s\n", target, build.sha)
 	opts := github.CreateCheckRunOptions{
-		Name:    "TinyGo HCI",
-		HeadSHA: sha,
+		Name:    targetName(target),
+		HeadSHA: build.sha,
 	}
 	cr, _, err := client.Checks.CreateCheckRun(context.Background(), ghorg, ghrepo, opts)
 	if err != nil {
 		log.Println(err)
 	}
-	runs[sha] = cr
+	build.runs[target] = cr
 }
 
-func startCheckRun(sha string) {
-	log.Printf("Github check run starting for %s\n", sha)
+func (build Build) startCheckSuite() {
+	log.Printf("Github check suite starting for %s\n", build.sha)
+	for _, board := range boards {
+		build.startCheckRun(board.target)
+	}
+}
+
+func (build Build) startCheckRun(target string) {
+	log.Printf("Github check run starting on board %s for %s\n", target, build.sha)
 	status := "in_progress"
-	if run, ok := runs[sha]; ok {
+	if run, ok := build.runs[target]; ok {
 		opts := github.UpdateCheckRunOptions{
-			Name:   "TinyGo HCI",
+			Name:   targetName(target),
 			Status: &status,
 		}
 		cr, _, err := client.Checks.UpdateCheckRun(context.Background(), ghorg, ghrepo, *run.ID, opts)
 		if err != nil {
 			log.Println(err)
 		}
-		runs[sha] = cr
+		build.runs[target] = cr
 	}
 }
 
-func passCheckRun(sha, output string) {
-	log.Printf("Github check run pass for commit %s\n", sha)
-	title := "TinyGo HCI"
+func (build Build) passCheckRun(target, output string) {
+	log.Printf("Github check run passed on board %s for %s\n", target, build.sha)
+	title := targetName(target)
 	summary := "Hardware CI tests have passed."
 	status := "completed"
 	conclusion := "success"
 	timestamp := github.Timestamp{Time: time.Now()}
-	if run, ok := runs[sha]; ok {
+	if run, ok := build.runs[target]; ok {
 		ro := github.CheckRunOutput{
 			Title:   &title,
 			Summary: &summary,
@@ -64,7 +78,7 @@ func passCheckRun(sha, output string) {
 		}
 
 		opts := github.UpdateCheckRunOptions{
-			Name:        "TinyGo HCI",
+			Name:        targetName(target),
 			Status:      &status,
 			Conclusion:  &conclusion,
 			CompletedAt: &timestamp,
@@ -74,18 +88,25 @@ func passCheckRun(sha, output string) {
 		if err != nil {
 			log.Println(err)
 		}
-		delete(runs, sha)
+		delete(build.runs, target)
 	}
 }
 
-func failCheckRun(sha, output string) {
-	log.Printf("Github check run fail for commit %s\n", sha)
-	title := "TinyGo HCI"
+func (build Build) failCheckSuite(output string) {
+	log.Printf("Github check suite failed for %s\n", build.sha)
+	for _, board := range boards {
+		build.failCheckRun(board.target, output)
+	}
+}
+
+func (build Build) failCheckRun(target, output string) {
+	log.Printf("Github check run failed on board %s for %s\n", target, build.sha)
+	title := targetName(target)
 	summary := "Hardware CI tests have failed."
 	status := "completed"
 	conclusion := "failure"
 	timestamp := github.Timestamp{Time: time.Now()}
-	if run, ok := runs[sha]; ok {
+	if run, ok := build.runs[target]; ok {
 		ro := github.CheckRunOutput{
 			Title:   &title,
 			Summary: &summary,
@@ -93,7 +114,7 @@ func failCheckRun(sha, output string) {
 		}
 
 		opts := github.UpdateCheckRunOptions{
-			Name:        "TinyGo HCI",
+			Name:        targetName(target),
 			Status:      &status,
 			Conclusion:  &conclusion,
 			CompletedAt: &timestamp,
@@ -103,6 +124,10 @@ func failCheckRun(sha, output string) {
 		if err != nil {
 			log.Println(err)
 		}
-		delete(runs, sha)
+		delete(build.runs, target)
 	}
+}
+
+func targetName(target string) string {
+	return "tinygohci: " + target
 }
