@@ -24,6 +24,12 @@ test-arduino-nano33: build/testrunner
 	@echo "Running tests..."
 	./build/testrunner /dev/arduino_nano33 115200 5
 
+test-docker-itsybitsy-m4: build/testrunner
+	docker run --device=/dev/itsybitsy_m4 -v /media:/media:shared -v "$(PWD):/src" tinygohci:latest tinygo flash -target itsybitsy-m4  -port=/dev/itsybitsy_m4 /src/itsybitsy-m4/main.go
+	@sleep 2.0s
+	@echo "Running tests..."
+	./build/testrunner /dev/itsybitsy_m4 115200 5
+
 test-arduino-uno: build/testrunner
 	tinygo flash -size short -target=arduino -port=/dev/arduino_uno ./arduino/
 	@echo "Running tests..."
@@ -110,3 +116,6 @@ start-ngrok-service:
 
 stop-ngrok-service:
 	sudo systemctl stop ngrok.service
+
+docker:
+	docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://13064-136505169-gh.circle-artifacts.com/0/tmp/tinygo.linux-amd64.tar.gz .
