@@ -42,8 +42,8 @@ func (build Build) pendingCheckRun(target string) {
 
 func (build Build) startCheckSuite() {
 	log.Printf("Github check suite starting for %s\n", build.sha)
-	for _, board := range boards {
-		build.startCheckRun(board.target)
+	for _, run := range build.runs {
+		build.startCheckRun(run.GetName())
 	}
 }
 
@@ -94,8 +94,8 @@ func (build Build) passCheckRun(target, output string) {
 
 func (build Build) failCheckSuite(output string) {
 	log.Printf("Github check suite failed for %s\n", build.sha)
-	for _, board := range boards {
-		build.failCheckRun(board.target, output)
+	for _, run := range build.runs {
+		build.failCheckRun(run.GetName(), output)
 	}
 }
 
@@ -129,5 +129,5 @@ func (build Build) failCheckRun(target, output string) {
 }
 
 func targetName(target string) string {
-	return "tinygohci: " + target
+	return target
 }

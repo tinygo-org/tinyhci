@@ -24,6 +24,21 @@ type Build struct {
 	runs map[string]*github.CheckRun
 }
 
+// NewBuild returns a new Build.
+func NewBuild(sha string) *Build {
+	return &Build{
+		sha:  sha,
+		runs: make(map[string]*github.CheckRun),
+	}
+}
+
+// Run is a specific run within a build.
+type Run struct {
+	target string
+	id     int64
+	run    *github.CheckRun
+}
+
 const (
 	debugSkipBinaryInstall = true // set to true to use the already installed tinygo
 	officialRelease        = "https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz"
@@ -38,8 +53,9 @@ var (
 	ciwebhookpath = "/buildhook"
 
 	client *github.Client
+
+	// key is sha
 	builds map[string]*Build
-	//builds   map[string]*github.CheckRun
 )
 
 func main() {
@@ -105,15 +121,32 @@ func main() {
 			return
 		}
 		switch event := event.(type) {
-		// case *github.PushEvent:
-		// 	pendingCheckRun(*event.After)
 		case *github.CheckSuiteEvent:
-			build := &Build{
-				sha:  *event.CheckSuite.HeadSHA,
-				runs: make(map[string]*github.CheckRun),
-			}
+			// received when a new commit is pushed
+			build := NewBuild(event.CheckSuite.GetHeadSHA())
 			builds[build.sha] = build
 			build.pendingCheckSuite()
+
+		case *github.CheckRunEvent:
+			// received when we are asked to re-run a failed check run
+			log.Printf("Github checkrun event for %d, %s", event.CheckRun.GetID(), event.CheckRun.GetHeadSHA())
+			var build *Build
+			board := GetBoard(event.CheckRun.GetName())
+
+			// first check to see if this build is in cache
+			if build, ok := builds[event.CheckRun.GetHeadSHA()]; ok {
+				build.processBoardRun(board)
+				return
+			}
+
+			// if not, then create new build
+			build = NewBuild(event.CheckRun.GetHeadSHA())
+			build.runs[event.CheckRun.GetName()] = event.CheckRun
+			builds[build.sha] = build
+
+			// handoff to channel for processing
+			buildsCh <- build
+
 		default:
 			log.Println("Unexpected Github event:", event)
 		}
@@ -161,7 +194,7 @@ func processBuilds(builds chan *Build) {
 			}
 
 			log.Printf("Building docker image using TinyGo from %s\n", url)
-			err := buildDocker(url)
+			err := buildDocker(url, build.sha)
 			if err != nil {
 				log.Println(err)
 				build.failCheckSuite("docker build failed")
@@ -169,36 +202,19 @@ func processBuilds(builds chan *Build) {
 			}
 
 			log.Printf("Running checks for commit %s\n", build.sha)
-			for _, board := range boards {
-				log.Printf("Flashing board %s\n", board.displayname)
-				flashout, err := board.flash()
-				if err != nil {
-					log.Println(err)
-					log.Println(flashout)
-					build.failCheckRun(board.target, flashout)
-					continue
-				}
-
-				time.Sleep(2 * time.Second)
-
-				log.Printf("Running tests on board %s\n", board.displayname)
-				out, err := board.test()
-				if err != nil {
-					log.Println(err)
-					log.Println(out)
-					build.failCheckRun(board.target, out)
-					continue
-				}
-				build.passCheckRun(board.target, out)
+			for _, run := range build.runs {
+				board := GetBoard(run.GetName())
+				build.processBoardRun(board)
 			}
 		}
 	}
 }
 
-func buildDocker(url string) error {
+func buildDocker(url, sha string) error {
 	buildarg := fmt.Sprintf("TINYGO_DOWNLOAD_URL=%s", url)
+	buildtag := "tinygohci:" + sha[:7]
 	out, err := exec.Command("docker", "build",
-		"-t", "tinygohci",
+		"-t", buildtag,
 		"-f", "tools/docker/Dockerfile",
 		"--build-arg", buildarg, ".").CombinedOutput()
 	if err != nil {
@@ -208,4 +224,27 @@ func buildDocker(url string) error {
 	}
 
 	return nil
+}
+
+func (build Build) processBoardRun(board *Board) {
+	log.Printf("Flashing board %s\n", board.displayname)
+	flashout, err := board.flash(build.sha)
+	if err != nil {
+		log.Println(err)
+		log.Println(flashout)
+		build.failCheckRun(board.target, flashout)
+		return
+	}
+
+	time.Sleep(2 * time.Second)
+
+	log.Printf("Running tests on board %s\n", board.displayname)
+	out, err := board.test()
+	if err != nil {
+		log.Println(err)
+		log.Println(out)
+		build.failCheckRun(board.target, out)
+		return
+	}
+	build.passCheckRun(board.target, out)
 }
