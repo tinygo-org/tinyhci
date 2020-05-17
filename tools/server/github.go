@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/bradleyfalzon/ghinstallation"
@@ -43,7 +45,8 @@ func (build Build) pendingCheckRun(target string) {
 func (build Build) startCheckSuite() {
 	log.Printf("Github check suite starting for %s\n", build.sha)
 	for _, run := range build.runs {
-		build.startCheckRun(run.GetName())
+		target, _ := parseTarget(run.GetName())
+		build.startCheckRun(target)
 	}
 }
 
@@ -95,7 +98,8 @@ func (build Build) passCheckRun(target, output string) {
 func (build Build) failCheckSuite(output string) {
 	log.Printf("Github check suite failed for %s\n", build.sha)
 	for _, run := range build.runs {
-		build.failCheckRun(run.GetName(), output)
+		target, _ := parseTarget(run.GetName())
+		build.failCheckRun(target, output)
 	}
 }
 
@@ -129,5 +133,13 @@ func (build Build) failCheckRun(target, output string) {
 }
 
 func targetName(target string) string {
-	return target
+	return "tinyhci: " + target
+}
+
+func parseTarget(name string) (string, error) {
+	res := strings.Split(name, " ")
+	if len(res) != 2 {
+		return "", errors.New("invalid check run name")
+	}
+	return res[1], nil
 }

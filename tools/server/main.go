@@ -104,7 +104,8 @@ func main() {
 			// received when we are asked to re-run a failed check run
 			log.Printf("Github checkrun event for %d, %s", event.CheckRun.GetID(), event.CheckRun.GetHeadSHA())
 			var build *Build
-			board := GetBoard(event.CheckRun.GetName())
+			target, _ := parseTarget(event.CheckRun.GetName())
+			board := GetBoard(target)
 
 			// first check to see if this build is in cache
 			if build, ok := builds[event.CheckRun.GetHeadSHA()]; ok {
@@ -114,7 +115,7 @@ func main() {
 
 			// if not, then create new build
 			build = NewBuild(event.CheckRun.GetHeadSHA())
-			build.runs[event.CheckRun.GetName()] = event.CheckRun
+			build.runs[target] = event.CheckRun
 			builds[build.sha] = build
 
 			// handoff to channel for processing
@@ -176,7 +177,8 @@ func processBuilds(builds chan *Build) {
 
 			log.Printf("Running checks for commit %s\n", build.sha)
 			for _, run := range build.runs {
-				board := GetBoard(run.GetName())
+				target, _ := parseTarget(run.GetName())
+				board := GetBoard(target)
 				build.processBoardRun(board)
 			}
 		}
