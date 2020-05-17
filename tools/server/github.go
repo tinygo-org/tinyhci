@@ -68,7 +68,7 @@ func (build Build) startCheckRun(target string) {
 
 func (build Build) passCheckRun(target, output string) {
 	log.Printf("Github check run passed on board %s for %s\n", target, build.sha)
-	title := "Hardware CI tests pass"
+	title := "Hardware CI pass"
 	summary := "Hardware CI tests have passed."
 	status := "completed"
 	conclusion := "success"
@@ -105,7 +105,7 @@ func (build Build) failCheckSuite(output string) {
 
 func (build Build) failCheckRun(target, output string) {
 	log.Printf("Github check run failed on board %s for %s\n", target, build.sha)
-	title := "Hardware CI tests fail"
+	title := "Hardware CI fail"
 	summary := "Hardware CI tests have failed."
 	status := "completed"
 	conclusion := "failure"
