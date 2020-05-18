@@ -74,7 +74,10 @@ func getCIBuildNumFromSHA(sha string) (string, error) {
 	}
 
 	client := &circleci.Client{}
-	cibuilds, _ := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 10, 0)
+	cibuilds, err := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 10, 0)
+	if err != nil {
+		return "", err
+	}
 
 	for _, b := range cibuilds {
 		// we're looking for the sha

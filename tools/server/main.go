@@ -114,9 +114,13 @@ func main() {
 
 		case *github.CheckRunEvent:
 			// received when we are asked to re-run a failed check run
-			log.Printf("Github checkrun event for %d, %s", event.CheckRun.GetID(), event.CheckRun.GetHeadSHA())
+			log.Printf("Github checkrun event for %d %s, %s", event.CheckRun.GetID(), event.CheckRun.GetName(), event.CheckRun.GetHeadSHA())
 			var build *Build
-			target, _ := parseTarget(event.CheckRun.GetName())
+			target, err := parseTarget(event.CheckRun.GetName())
+			if err != nil {
+				log.Println(err)
+				return
+			}
 			board := GetBoard(target)
 
 			// first check to see if this build is in cache
