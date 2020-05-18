@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	useCurrentBinaryRelease = true // set to true to use the already installed tinygo
+	useCurrentBinaryRelease = false // set to true to use the already installed tinygo
 	officialRelease         = "https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz"
 )
 
