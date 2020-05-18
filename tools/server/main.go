@@ -32,6 +32,16 @@ var (
 )
 
 func main() {
+	ghwebhookpath = os.Getenv("GHWEBHOOKPATH")
+	if ghwebhookpath == "" {
+		log.Fatal("You must set an ENV var with your GHWEBHOOKPATH")
+	}
+
+	ciwebhookpath = os.Getenv("CIWEBHOOKPATH")
+	if ciwebhookpath == "" {
+		log.Fatal("You must set an ENV var with your CIWEBHOOKPATH")
+	}
+
 	ghorg = os.Getenv("GHORG")
 	if ghorg == "" {
 		log.Fatal("You must set an ENV var with your GHORG")
