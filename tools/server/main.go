@@ -104,6 +104,8 @@ func main() {
 			return
 		}
 		switch event := event.(type) {
+		case *github.PushEvent:
+			// ignore pushes because we care about checks
 		case *github.CheckSuiteEvent:
 			// received when a new commit is pushed
 			build := NewBuild(event.CheckSuite.GetHeadSHA())
