@@ -60,6 +60,7 @@ func (board *Board) flash(sha string) (string, error) {
 		device,
 		"-v", "/media:/media:shared",
 		"-v", pwd+":/src",
+		"--rm",
 		buildtag,
 		"tinygo", "flash",
 		"-target", board.target, port, file).CombinedOutput()
