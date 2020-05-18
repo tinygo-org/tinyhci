@@ -126,7 +126,20 @@ func main() {
 			}
 
 			// if not, then create new build
+			bn, err := getCIBuildNumFromSHA(event.CheckRun.GetHeadSHA())
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			url, err := getTinygoBinaryURL(bn)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
 			build = NewBuild(event.CheckRun.GetHeadSHA())
+			build.binaryURL = url
 			build.runs[target] = event.CheckRun
 			builds[build.sha] = build
 

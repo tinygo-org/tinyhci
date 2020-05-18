@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -65,4 +66,22 @@ func getTinygoBinaryURL(buildNum string) (string, error) {
 		}
 	}
 	return "", errors.New("cannot find TinyGo build artifact file")
+}
+
+func getCIBuildNumFromSHA(sha string) (string, error) {
+	if useCurrentBinaryRelease {
+		return "using current TinyGo binary release", nil
+	}
+
+	client := &circleci.Client{}
+	cibuilds, _ := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 10, 0)
+
+	for _, b := range cibuilds {
+		// we're looking for the sha
+		if b.VcsRevision == sha {
+			bn := strconv.Itoa(b.BuildNum)
+			return bn, nil
+		}
+	}
+	return "", fmt.Errorf("cannot find TinyGo build for %s", sha)
 }
