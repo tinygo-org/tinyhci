@@ -47,8 +47,8 @@ func parseBuildInfo(r *http.Request) (*CIBuildInfo, error) {
 }
 
 func getTinygoBinaryURL(buildNum string) (string, error) {
-	if debugSkipBinaryInstall {
-		return "skipping", nil
+	if useCurrentBinaryRelease {
+		return "using current TinyGo binary release", nil
 	}
 
 	client := &circleci.Client{}

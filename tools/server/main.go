@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	debugSkipBinaryInstall = true // set to true to use the already installed tinygo
-	officialRelease        = "https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz"
+	useCurrentBinaryRelease = true // set to true to use the already installed tinygo
+	officialRelease         = "https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz"
 )
 
 var (
@@ -173,7 +173,7 @@ func processBuilds(builds chan *Build) {
 			build.startCheckSuite()
 
 			url := officialRelease
-			if !debugSkipBinaryInstall {
+			if !useCurrentBinaryRelease {
 				url = build.binaryURL
 			}
 
