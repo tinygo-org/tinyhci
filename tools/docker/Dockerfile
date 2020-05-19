@@ -1,7 +1,7 @@
 FROM debian:stable-slim AS tinygohci-base
 
 RUN apt-get clean && apt-get update && \
-    apt-get install -y wget gcc gcc-avr avr-libc git make build-essential libreadline-dev libwxgtk3.0-*
+    apt-get install -y wget gcc gcc-avr avr-libc avrdude git make build-essential libreadline-dev libwxgtk3.0-*
 
 RUN git clone https://github.com/shumatech/BOSSA.git && \
     cd BOSSA && \
