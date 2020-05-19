@@ -132,6 +132,29 @@ func (build Build) failCheckRun(target, output string) {
 	}
 }
 
+// reload the check runs from github for this build
+func (build Build) reloadCheckRuns() error {
+	opts := github.ListCheckRunsOptions{}
+	res, _, err := client.Checks.ListCheckRunsForRef(context.Background(), ghorg, ghrepo, build.sha, &opts)
+	if err != nil {
+		return err
+	}
+
+	for _, run := range res.CheckRuns {
+		if !strings.Contains(run.GetName(), "tinyhci:") {
+			continue
+		}
+
+		target, err := parseTarget(run.GetName())
+		if err != nil {
+			return err
+		}
+		build.runs[target] = run
+	}
+
+	return nil
+}
+
 func targetName(target string) string {
 	return "tinyhci: " + target
 }

@@ -175,8 +175,23 @@ func main() {
 			return
 		}
 
-		build := builds[bi.VCSRevision]
+		// first check to see if this build is in cache
+		var build *Build
+		ok := false
+		if build, ok = builds[bi.VCSRevision]; !ok {
+			// if not, then create new build
+			build = NewBuild(bi.VCSRevision)
+			builds[build.sha] = build
+			// get the runs for this build
+			err := build.reloadCheckRuns()
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		}
+
 		build.binaryURL = url
+
 		buildsCh <- build
 	})
 
