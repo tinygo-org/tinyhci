@@ -109,7 +109,6 @@ func main() {
 			return
 		case *github.CheckSuiteEvent:
 			log.Printf("Github checksuite event %s for %d %s", event.CheckSuite.GetStatus(), event.CheckSuite.GetID(), event.CheckSuite.GetHeadSHA())
-
 			if event.CheckSuite.GetStatus() == "completed" {
 				return
 			}
