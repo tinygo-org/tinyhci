@@ -113,8 +113,14 @@ func main() {
 			build.pendingCheckSuite()
 
 		case *github.CheckRunEvent:
+			log.Printf("Github checkrun event %s for %d %s, %s", event.CheckRun.GetStatus(), event.CheckRun.GetID(), event.CheckRun.GetName(), event.CheckRun.GetHeadSHA())
+
+			// ignore completed events to avoid endless loop
+			if event.CheckRun.GetStatus() == "completed" {
+				return
+			}
+
 			// received when we are asked to re-run a failed check run
-			log.Printf("Github checkrun event for %d %s, %s", event.CheckRun.GetID(), event.CheckRun.GetName(), event.CheckRun.GetHeadSHA())
 			var build *Build
 			target, err := parseTarget(event.CheckRun.GetName())
 			if err != nil {
