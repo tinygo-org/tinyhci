@@ -106,7 +106,14 @@ func main() {
 		switch event := event.(type) {
 		case *github.PushEvent:
 			// ignore pushes because we care about checks
+			return
 		case *github.CheckSuiteEvent:
+			log.Printf("Github checksuite event %s for %d %s", event.CheckSuite.GetStatus(), event.CheckSuite.GetID(), event.CheckSuite.GetHeadSHA())
+
+			if event.CheckSuite.GetStatus() == "completed" {
+				return
+			}
+
 			// received when a new commit is pushed
 			build := NewBuild(event.CheckSuite.GetHeadSHA())
 			builds[build.sha] = build
