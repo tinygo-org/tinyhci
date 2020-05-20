@@ -42,7 +42,6 @@ func (build Build) processBoardRun(board *Board) {
 	out, err := board.test()
 	if err != nil {
 		log.Println(err)
-		log.Println(out)
 		build.failCheckRun(board.target, flashout(fout)+testsout(out))
 		return
 	}
