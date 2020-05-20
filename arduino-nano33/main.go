@@ -275,7 +275,7 @@ func printtest(testname string) {
 }
 
 func printtestresult(result string) {
-	println("*" + result + "*")
+	println("**" + result + "**")
 }
 
 func printfailexpected(reason string) {
