@@ -108,7 +108,13 @@ func main() {
 			// ignore pushes because we care about checks
 			return
 		case *github.CheckSuiteEvent:
-			log.Printf("Github checksuite event %s for %d %s", event.CheckSuite.GetStatus(), event.CheckSuite.GetID(), event.CheckSuite.GetHeadSHA())
+			log.Printf("Github checksuite event %s %s for %d %s\n",
+				event.CheckSuite.GetStatus(),
+				event.CheckSuite.GetConclusion(),
+				event.CheckSuite.GetID(),
+				event.CheckSuite.GetHeadSHA())
+
+			// ignore completed events to avoid endless loop
 			if event.CheckSuite.GetStatus() == "completed" {
 				return
 			}
@@ -119,7 +125,12 @@ func main() {
 			build.pendingCheckSuite()
 
 		case *github.CheckRunEvent:
-			log.Printf("Github checkrun event %s for %d %s, %s", event.CheckRun.GetStatus(), event.CheckRun.GetID(), event.CheckRun.GetName(), event.CheckRun.GetHeadSHA())
+			log.Printf("Github checkrun event %s %s for %d %s %s\n",
+				event.CheckRun.GetStatus(),
+				event.CheckRun.GetConclusion(),
+				event.CheckRun.GetID(),
+				event.CheckRun.GetName(),
+				event.CheckRun.GetHeadSHA())
 
 			// ignore completed events to avoid endless loop
 			if event.CheckRun.GetStatus() == "completed" {
@@ -177,7 +188,7 @@ func main() {
 
 		log.Printf("Build Info: %+v\n", bi)
 		if bi.Status != "success" {
-			log.Printf("Not running tests for %s status was %s\n", bi.VCSRevision, bi.Status)
+			log.Printf("Not running tests because build for %s status was %s\n", bi.VCSRevision, bi.Status)
 			return
 		}
 
