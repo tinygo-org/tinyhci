@@ -28,11 +28,11 @@ func NewBuild(sha string) *Build {
 
 func (build Build) processBoardRun(board *Board) {
 	log.Printf("Flashing board %s\n", board.displayname)
-	flashout, err := board.flash(build.sha)
+	fout, err := board.flash(build.sha)
 	if err != nil {
 		log.Println(err)
-		log.Println(flashout)
-		build.failCheckRun(board.target, flashout)
+		log.Println(fout)
+		build.failCheckRun(board.target, flashout(fout))
 		return
 	}
 
@@ -43,8 +43,21 @@ func (build Build) processBoardRun(board *Board) {
 	if err != nil {
 		log.Println(err)
 		log.Println(out)
-		build.failCheckRun(board.target, out)
+		build.failCheckRun(board.target, flashout(fout)+testsout(out))
 		return
 	}
-	build.passCheckRun(board.target, out)
+
+	build.passCheckRun(board.target, flashout(fout)+testsout(out))
+}
+
+func flashout(out string) string {
+	return "## Flash\n\n```\n" +
+		out +
+		"\n```\n\n"
+}
+
+func testsout(out string) string {
+	return "## Tests\n\n" +
+		out +
+		"\n\n"
 }
