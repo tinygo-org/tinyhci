@@ -88,7 +88,7 @@ func waitForStart() {
 }
 
 func endTests() {
-	println("Tests complete.")
+	println("\n### Tests complete.")
 
 	// tests done, now sleep waiting for baud reset to load new code
 	for {
@@ -235,13 +235,13 @@ func printtest(testname string) {
 }
 
 func printtestresult(result string) {
-	println("**" + result + "**")
+	println("***" + result + "***")
 }
 
 func printfailexpected(reason string) {
-	println("    expected:", reason)
+	println("        expected:", reason)
 }
 
 func printfailactual(val uint16) {
-	println("    actual:", val)
+	println("        actual:", val)
 }
