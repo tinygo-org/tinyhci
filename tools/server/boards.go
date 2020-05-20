@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 )
 
 type Board struct {
@@ -12,6 +13,7 @@ type Board struct {
 	displayname string
 	port        string
 	baud        int
+	resetpause  time.Duration
 }
 
 var (
@@ -21,18 +23,21 @@ var (
 			displayname: "Adafruit ItsyBitsy-M4",
 			port:        "itsybitsy_m4",
 			baud:        115200,
+			resetpause:  2 * time.Second,
 		},
 		&Board{
 			target:      "arduino",
 			displayname: "Arduino Uno",
 			port:        "arduino_uno",
 			baud:        57600,
+			resetpause:  5 * time.Second,
 		},
 		&Board{
 			target:      "arduino-nano33",
 			displayname: "Arduino Nano33 IoT",
 			port:        "arduino_nano33",
 			baud:        115200,
+			resetpause:  2 * time.Second,
 		},
 	}
 )
