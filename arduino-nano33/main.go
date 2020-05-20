@@ -100,32 +100,32 @@ func endTests() {
 
 // digital read of D11 pin physically connected to V
 func digitalReadVoltage() {
-	print("digitalReadVoltage:")
+	printtest("digitalReadVoltage")
 
 	readV.Configure(machine.PinConfig{Mode: machine.PinInput})
 
 	// should be on
 	if readV.Get() {
-		println(" pass")
+		printtestresult("pass")
 		return
 	}
 
-	println(" fail")
+	printtestresult("fail")
 }
 
 // digital read of D12 pin physically connected to G
 func digitalReadGround() {
-	print("digitalReadGround:")
+	printtest("digitalReadGround")
 
 	readG.Configure(machine.PinConfig{Mode: machine.PinInput})
 
 	// should be off
 	if readG.Get() {
-		println(" fail")
+		printtestresult("fail")
 		return
 	}
 
-	println(" pass")
+	printtestresult("pass")
 }
 
 // digital write on/off of D9 pin as input physically connected to D10 pin as output.
@@ -133,29 +133,29 @@ func digitalWrite() {
 	readpin.Configure(machine.PinConfig{Mode: machine.PinInput})
 	writepin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 
-	print("digitalWriteOn:")
+	printtest("digitalWriteOn")
 	writepin.High()
 	time.Sleep(100 * time.Millisecond)
 
 	// should be on
 	if readpin.Get() {
-		println(" pass")
+		printtestresult("pass")
 	} else {
-		println(" fail")
+		printtestresult("fail")
 	}
 
 	time.Sleep(100 * time.Millisecond)
 
-	print("digitalWriteOff:")
+	printtest("digitalWriteOff")
 	writepin.Low()
 	time.Sleep(100 * time.Millisecond)
 
 	// should be off
 	if readpin.Get() {
-		println(" fail")
+		printtestresult("fail")
 		return
 	} else {
-		println(" pass")
+		printtestresult("pass")
 	}
 }
 
@@ -163,7 +163,7 @@ func digitalWrite() {
 func analogReadVoltage() {
 	analogV.Configure()
 
-	print("analogReadVoltage:")
+	printtest("analogReadVoltage")
 
 	// should be close to max
 	var avg int
@@ -175,15 +175,13 @@ func analogReadVoltage() {
 	val := uint16(avg)
 
 	if val >= maxanalog-allowedvariance {
-		println(" pass")
+		printtestresult("pass")
 
 		return
 	} else {
-		println(" fail")
-		print("  expected: ")
-		print("'val >= 65535-256'")
-		print(", actual: ")
-		println(val)
+		printtestresult("fail")
+		printfailexpected("'val >= 65535-256'")
+		printfailactual(val)
 	}
 }
 
@@ -191,7 +189,7 @@ func analogReadVoltage() {
 func analogReadGround() {
 	analogG.Configure()
 
-	print("analogReadGround:")
+	printtest("analogReadGround")
 
 	// should be close to zero
 	var avg int
@@ -203,15 +201,13 @@ func analogReadGround() {
 	val := uint16(avg)
 
 	if val <= allowedvariance {
-		println(" pass")
+		printtestresult("pass")
 		return
 	} else {
-		println(" fail")
+		printtestresult("fail")
 
-		print("  expected: ")
-		print("'val <= 256'")
-		print(", actual: ")
-		println(val)
+		printfailexpected("'val <= 256'")
+		printfailactual(val)
 	}
 }
 
@@ -220,7 +216,7 @@ func analogReadGround() {
 func analogReadHalfVoltage() {
 	analogHalf.Configure()
 
-	print("analogReadHalfVoltage:")
+	printtest("analogReadHalfVoltage")
 
 	// should be around half the max
 	var avg int
@@ -232,15 +228,12 @@ func analogReadHalfVoltage() {
 	val := uint16(avg)
 
 	if val <= maxanalog/2+allowedvariance && val >= maxanalog/2-allowedvariance {
-		println(" pass")
+		printtestresult("pass")
 		return
 	}
-	println(" fail")
-
-	print("  expected: ")
-	print("'val <= 65535/2+256 && val >= 65535/2-256'")
-	print(", actual: ")
-	println(val)
+	printtestresult("fail")
+	printfailexpected("'val <= 65535/2+256 && val >= 65535/2-256'")
+	printfailactual(val)
 }
 
 // checks to see if an attached MPU-6050 accelerometer is connected.
@@ -250,18 +243,18 @@ func i2cConnection() {
 	a := mpu6050.New(machine.I2C0)
 	accel = &a
 
-	print("i2cConnectionNoPower:")
+	printtest("i2cConnectionNoPower")
 
 	// should not be connected when not powered
 	powerpin.Low()
 	time.Sleep(100 * time.Millisecond)
 	if accel.Connected() {
-		println(" fail")
+		printtestresult("fail")
 	} else {
-		println(" pass")
+		printtestresult("pass")
 	}
 
-	print("i2cConnectionPower:")
+	printtest("i2cConnectionPower")
 	// turn on power and should be connected now
 	powerpin.High()
 	time.Sleep(100 * time.Millisecond)
@@ -270,9 +263,25 @@ func i2cConnection() {
 	time.Sleep(400 * time.Millisecond)
 
 	if !accel.Connected() {
-		println(" fail")
+		printtestresult("fail")
 		return
 	}
 
-	println(" pass")
+	printtestresult("pass")
+}
+
+func printtest(testname string) {
+	print("- " + testname + " = ")
+}
+
+func printtestresult(result string) {
+	println("*" + result + "*")
+}
+
+func printfailexpected(reason string) {
+	println("    expected:", reason)
+}
+
+func printfailactual(val uint16) {
+	println("    actual:", val)
 }
