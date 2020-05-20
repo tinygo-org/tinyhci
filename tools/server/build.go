@@ -36,7 +36,7 @@ func (build Build) processBoardRun(board *Board) {
 		return
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	log.Printf("Running tests on board %s\n", board.displayname)
 	out, err := board.test()
