@@ -67,7 +67,7 @@ func main() {
 		result = result + string(buff[:n])
 		if strings.Contains(result, "Tests complete.") {
 			fmt.Println(result)
-			if strings.Contains(result, "error") {
+			if strings.Contains(result, "fail") {
 				os.Exit(1)
 			}
 			os.Exit(0)
