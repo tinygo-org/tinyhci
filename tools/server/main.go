@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"net/http"
 
@@ -29,6 +30,8 @@ var (
 
 	// key is sha
 	builds map[string]*Build
+
+	pollFrequency = 30 * time.Second
 )
 
 func main() {
@@ -91,6 +94,7 @@ func main() {
 	buildsCh := make(chan *Build)
 
 	go processBuilds(buildsCh)
+	go pollPendingBuilds(buildsCh)
 
 	http.HandleFunc(ghwebhookpath, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := github.ValidatePayload(r, []byte(ghkey))
@@ -121,6 +125,8 @@ func main() {
 
 			// received when a new commit is pushed
 			build := NewBuild(event.CheckSuite.GetHeadSHA())
+			build.pendingCI = true
+			build.started = time.Now()
 			builds[build.sha] = build
 			build.pendingCheckSuite()
 
@@ -178,6 +184,7 @@ func main() {
 		}
 	})
 
+	// we can remove this soon.
 	http.HandleFunc(ciwebhookpath, func(w http.ResponseWriter, r *http.Request) {
 		log.Println("CircleCI buildhook received.")
 		bi, err := parseBuildInfo(r)
@@ -187,41 +194,15 @@ func main() {
 		}
 
 		log.Printf("Build Info: %+v\n", bi)
-		if bi.Status != "success" {
-			log.Printf("Not running tests because build for %s status was %s\n", bi.VCSRevision, bi.Status)
-			return
-		}
-
-		url, err := getTinygoBinaryURL(bi.BuildNum)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		// first check to see if this build is in cache
-		var build *Build
-		ok := false
-		if build, ok = builds[bi.VCSRevision]; !ok {
-			// if not, then create new build
-			build = NewBuild(bi.VCSRevision)
-			builds[build.sha] = build
-			// get the runs for this build
-			err := build.reloadCheckRuns()
-			if err != nil {
-				log.Println(err)
-				return
-			}
-		}
-
-		build.binaryURL = url
-
-		buildsCh <- build
 	})
 
 	log.Printf("Starting TinyHCI server for %s/%s\n", ghorg, ghrepo)
 	http.ListenAndServe(":8000", nil)
 }
 
+// processBuilds is run as a go routine to pull new builds
+// from the build channel, and then perform the needed build
+// tasks aka build docker image, then flash/test for each board.
 func processBuilds(builds chan *Build) {
 	for {
 		select {
@@ -252,6 +233,8 @@ func processBuilds(builds chan *Build) {
 	}
 }
 
+// buildDocker does the docker build for the binary download
+// with this SHA.
 func buildDocker(url, sha string) error {
 	buildarg := fmt.Sprintf("TINYGO_DOWNLOAD_URL=%s", url)
 	buildtag := "tinygohci:" + sha[:7]
@@ -266,4 +249,42 @@ func buildDocker(url, sha string) error {
 	}
 
 	return nil
+}
+
+// pollPendingBuilds is run as a go routine to poll the
+// circleci server, and look for new builds of the TinyGo
+// binary that match tinyhci builds in need of processing.
+func pollPendingBuilds(buildsCh chan *Build) {
+	for {
+		if len(builds) == 0 {
+			log.Println("No builds to poll for.")
+		} else {
+			log.Println("Polling for builds...")
+		}
+
+		for _, b := range builds {
+			if b.pendingCI {
+				// look to see if there is a CI build with binary for this build
+				bn, err := getMostRecentCIBuildNumAfterStart(b.sha, b.started)
+				if err != nil {
+					continue
+				}
+				log.Println("Binary ready for", b.sha)
+
+				url, err := getTinygoBinaryURL(bn)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+
+				b.binaryURL = url
+				b.pendingCI = false
+
+				buildsCh <- b
+			}
+		}
+
+		// sleep in-between waiting for new builds
+		time.Sleep(pollFrequency)
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/metanerd/go-circleci"
 )
@@ -82,6 +83,29 @@ func getCIBuildNumFromSHA(sha string) (string, error) {
 	for _, b := range cibuilds {
 		// we're looking for the sha
 		if b.VcsRevision == sha {
+			bn := strconv.Itoa(b.BuildNum)
+			return bn, nil
+		}
+	}
+	return "", fmt.Errorf("cannot find TinyGo build for %s", sha)
+}
+
+func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (string, error) {
+	if useCurrentBinaryRelease {
+		return "using current TinyGo binary release", nil
+	}
+
+	client := &circleci.Client{}
+	cibuilds, err := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 100, 0)
+	if err != nil {
+		return "", err
+	}
+
+	for _, b := range cibuilds {
+		if b.BuildParameters["CIRCLE_JOB"] == "build-linux" &&
+			start.Before(*b.StartTime) &&
+			b.VcsRevision == sha {
+
 			bn := strconv.Itoa(b.BuildNum)
 			return bn, nil
 		}

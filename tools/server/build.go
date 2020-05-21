@@ -9,6 +9,8 @@ import (
 
 // Build is a specific build to be tested.
 type Build struct {
+	pendingCI bool
+	started   time.Time
 	binaryURL string
 	sha       string
 	suite     *github.CheckSuite
