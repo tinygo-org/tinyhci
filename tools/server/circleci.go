@@ -75,14 +75,17 @@ func getCIBuildNumFromSHA(sha string) (string, error) {
 	}
 
 	client := &circleci.Client{}
-	cibuilds, err := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 10, 0)
+	cibuilds, err := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 100, 0)
 	if err != nil {
 		return "", err
 	}
 
 	for _, b := range cibuilds {
 		// we're looking for the sha
-		if b.VcsRevision == sha {
+		if b.BuildParameters["CIRCLE_JOB"] == "build-linux" &&
+			b.VcsRevision == sha &&
+			b.Status == "success" {
+
 			bn := strconv.Itoa(b.BuildNum)
 			return bn, nil
 		}
