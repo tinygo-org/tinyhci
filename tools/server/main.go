@@ -109,7 +109,7 @@ func main() {
 		}
 		switch event := event.(type) {
 		case *github.PushEvent:
-			// ignore pushes because we care about checks
+			// ignore pushes because we only care about checks API
 			return
 		case *github.CheckSuiteEvent:
 			log.Printf("Github checksuite event %s %s for %d %s\n",
@@ -118,66 +118,62 @@ func main() {
 				event.CheckSuite.GetID(),
 				event.CheckSuite.GetHeadSHA())
 
-			// ignore completed events to avoid endless loop
-			if event.CheckSuite.GetStatus() == "completed" {
-				return
+			switch event.CheckSuite.GetStatus() {
+			case "completed":
+				// just in case we want to do something here
+			case "queued":
+				// received when a new commit is pushed
+				build := NewBuild(event.CheckSuite.GetHeadSHA())
+				build.pendingCI = true
+				build.started = time.Now()
+				builds[build.sha] = build
+				build.pendingCheckSuite()
+			default:
 			}
 
-			// received when a new commit is pushed
-			build := NewBuild(event.CheckSuite.GetHeadSHA())
-			build.pendingCI = true
-			build.started = time.Now()
-			builds[build.sha] = build
-			build.pendingCheckSuite()
-
 		case *github.CheckRunEvent:
-			log.Printf("Github checkrun event %s %s for %d %s %s\n",
+			log.Printf("Github checkrun event %s %s for %d %s %s %s\n",
 				event.CheckRun.GetStatus(),
 				event.CheckRun.GetConclusion(),
 				event.CheckRun.GetID(),
 				event.CheckRun.GetName(),
+				event.GetAction(),
 				event.CheckRun.GetHeadSHA())
 
-			// ignore completed events to avoid endless loop
-			if event.CheckRun.GetStatus() == "completed" {
-				return
+			switch event.CheckRun.GetStatus() {
+			case "completed":
+				if event.GetAction() == "rerequested" {
+					// do the retest here
+					bn, err := getCIBuildNumFromSHA(event.CheckRun.GetHeadSHA())
+					if err != nil {
+						log.Println(err)
+						return
+					}
+
+					url, err := getTinygoBinaryURL(bn)
+					if err != nil {
+						log.Println(err)
+						return
+					}
+
+					target, err := parseTarget(event.CheckRun.GetName())
+					if err != nil {
+						log.Println(err)
+						return
+					}
+
+					build := NewBuild(event.CheckRun.GetHeadSHA())
+					build.binaryURL = url
+					build.runs[target] = event.CheckRun
+					builds[build.sha] = build
+
+					// handoff to channel for processing
+					buildsCh <- build
+				}
+			case "queued":
+				// received when a new commit is pushed
+			default:
 			}
-
-			// received when we are asked to re-run a failed check run
-			var build *Build
-			target, err := parseTarget(event.CheckRun.GetName())
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			board := GetBoard(target)
-
-			// first check to see if this build is in cache
-			if build, ok := builds[event.CheckRun.GetHeadSHA()]; ok {
-				build.processBoardRun(board)
-				return
-			}
-
-			// if not, then create new build
-			bn, err := getCIBuildNumFromSHA(event.CheckRun.GetHeadSHA())
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			url, err := getTinygoBinaryURL(bn)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			build = NewBuild(event.CheckRun.GetHeadSHA())
-			build.binaryURL = url
-			build.runs[target] = event.CheckRun
-			builds[build.sha] = build
-
-			// handoff to channel for processing
-			buildsCh <- build
 
 		default:
 			log.Println("Unexpected Github event:", event)
