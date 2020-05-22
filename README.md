@@ -9,6 +9,7 @@ Currently implemented integration tests for:
 - Adafruit ItsyBitsy-M4
 - Arduino Nano33-IoT
 - Arduino Uno
+- bbc:microbit
 
 ## How it works
 
