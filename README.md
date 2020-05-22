@@ -1,4 +1,6 @@
-# TinyGo Integration Tests
+# TinyHCI
+
+## Hardware Continuous Integration (HCI) System
 
 Used to test actual hardware connections for microcontrollers. It is intended to provide smoke test implementations that exercise the basic functionality for each kind of hardware interface for each supported microcontroller.
 
@@ -8,17 +10,17 @@ Currently implemented integration tests for:
 - Arduino Nano33-IoT
 - Arduino Uno
 
-## Hardware Continuous Integration (HCI) System
+## How it works
 
-The TinyGo HCI system is a Github application that uses the webhook interface.
+TinyHCI is a Github application that monitors commits to the TinyGo project, and then triggers tests of the physical hardware.
 
-It listens for pull requests to the target repository, and then will do the following:
+It uses the webhook interface using the Github Checks API to listen for requests to run check to the target repository, and then will do the following:
 
-- [x] Create a new docker image that downloads and installs the binary build of TinyGo based on the pull request SHA
 - [x] Create a Github check suite for the PR (https://developer.github.com/v3/checks/)
+- [x] Create a new docker image that downloads and installs the binary build of TinyGo from CircleCI based on the pull request SHA
 - [x] Flash the hardware tests onto each of the supported microcontroller boards using the docker image
 - [x] Execute the hardware tests for each of the supported microcontroller boards using the test runner
-- [x] Create a Github check run in the check suite for this SHA with the test results for each MCU to either "success" or "failed" based on the pass/fail for each as they are executed by the HCI system.
+- [x] Update the Github check run in the check suite for this SHA with the test results for each MCU to either "success" or "failed" based on the pass/fail for each as they are executed by the HCI system.
 
 ## Test Runner
 
@@ -26,26 +28,29 @@ The process of running the hardware tests is:
 
 - compile the test code for that MCU
 - flash test code onto the MCU
-- MCU test program waits for a keypress to be detected on the serial port
-- HCI system connects to the MCU via serial port, and sends the key code to start the test run
+- use the `testrunner` to execute the tests.
+
+One the MCU has been flashed with the test code, here is how it works with the `testrunner` program:
+
+- MCU test program waits for a `t` keypress to be detected on the serial port
+- The test runner connects via serial port to the MCU, then send a `t` key to test the MCU to start the tests
 - MCU runs thru the hardware integration tests, outputting the results back out to the serial port
+- The test runner then looks at the test results to determine if the suite passed or failed
 
 ```
-$ make test-itsybitsy-m4 
-tinygo flash -size short -target=itsybitsy-m4 ./itsybitsy-m4/
-   code    data     bss |   flash     ram
-  11020      40    6360 |   11060    6400
-Running tests...
-digitalReadVoltage: pass
-digitalReadGround: pass
-digitalWriteOn: pass
-digitalWriteOff: pass
-analogReadVoltage: pass
-analogReadGround: pass
-analogReadHalfVoltage: pass
-i2cConnectionNoPower: pass
-i2cConnectionPower: pass
-Tests complete.
+./build/testrunner /dev/ttyACM0 115200 5
+
+- digitalReadVoltage = ***pass***
+- digitalReadGround = ***pass**
+- digitalWriteOn = ***pass**
+- digitalWriteOff = ***pass***
+- analogReadVoltage = ***pass***
+- analogReadGround = ***pass***
+- analogReadHalfVoltage = ***pass***
+- i2cConnectionNoPower = ***pass***
+- i2cConnectionPower = ***pass***
+
+### Tests complete.
 ```
 
 ### Digital I/O
@@ -86,9 +91,18 @@ Now we can use the `tinygohci:latest` image to build/flash our program.
 docker run --device=/dev/ttyACM0 -v /media:/media:shared tinygohci:latest tinygo flash -target circuitplay-express examples/blinky1
 ```
 
+## Why we created TinyHCI
+
+We did not use [GoHCI](https://github.com/periph/gohci) because our requirements are a bit different. In our case the actual tests are executed on the microcontrollers themselves vs. being executed on various other connected machines. Also we wanted TinyHCI to be able to take advantage of the newer Checks API vs. the older Status API.
+
+We also did not use the [Github Actions local runner](https://github.com/actions/runner) because we wanted more discreet control over the integration server, and also because we did not want to install all of the dependencies for .NET for Linux.
+
 ## Thanks
 
-Thanks to @maruel for the work on GoHCI which has been an influence on this project. 
+Thanks to [@maruel](https://github.com/maruel) for the work on GoHCI which has certainly been an influence on this project.
 
-Also thanks to Github for providing the free code hosting and CircleCI for providing the CI services that are the foundation for this project.
+Also thanks to Github for providing code hosting and CircleCI for providing CI services that are the foundation for this project.
 
+## License
+
+This project has been licensed under the BSD 3-clause license, just like the Go and TinyGo projects.
