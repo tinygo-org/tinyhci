@@ -39,6 +39,13 @@ var (
 			baud:        115200,
 			resetpause:  2 * time.Second,
 		},
+		&Board{
+			target:      "microbit",
+			displayname: "bbc:microbit",
+			port:        "microbit",
+			baud:        115200,
+			resetpause:  2 * time.Second,
+		},
 	}
 )
 

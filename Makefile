@@ -35,6 +35,12 @@ test-arduino-uno: build/testrunner
 	@echo "Running tests..."
 	./build/testrunner /dev/arduino_uno 57600 5
 
+test-microbit: build/testrunner
+	tinygo flash -size short -target=microbit ./microbit/
+	@sleep 2.0s
+	@echo "Running tests..."
+	./build/testrunner /dev/microbit 115200 5
+
 update-go:
 	@test "$(CURRENT_GOVERSION)" = "$(TARGET_GOVERSION)" && ( echo "$(RED)$(TARGET_GOVERSION) has already been installed$(NOCOLOR)\n" ; exit 1 )
 	wget "https://dl.google.com/go/$(TARGET_GOVERSION).linux-amd64.tar.gz" -O /tmp/go.tar.gz
