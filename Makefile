@@ -41,6 +41,12 @@ test-microbit: build/testrunner
 	@echo "Running tests..."
 	./build/testrunner /dev/microbit 115200 5
 
+test-hifive: build/testrunner
+	tinygo flash -size short -target=hifive1b ./hifive1b/
+	@sleep 5.0s
+	@echo "Running tests..."
+	./build/testrunner /dev/ttyACM0 115200 5
+
 update-go:
 	@test "$(CURRENT_GOVERSION)" = "$(TARGET_GOVERSION)" && ( echo "$(RED)$(TARGET_GOVERSION) has already been installed$(NOCOLOR)\n" ; exit 1 )
 	wget "https://dl.google.com/go/$(TARGET_GOVERSION).linux-amd64.tar.gz" -O /tmp/go.tar.gz
