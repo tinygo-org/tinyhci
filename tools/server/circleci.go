@@ -75,21 +75,25 @@ func getCIBuildNumFromSHA(sha string) (string, error) {
 	}
 
 	client := &circleci.Client{}
-	cibuilds, err := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 100, 0)
-	if err != nil {
-		return "", err
-	}
 
-	for _, b := range cibuilds {
-		// we're looking for the sha
-		if b.BuildParameters["CIRCLE_JOB"] == "build-linux" &&
-			b.VcsRevision == sha &&
-			b.Status == "success" {
+	for offset := 0; offset <= 500; offset += 100 {
+		cibuilds, err := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 100, offset)
+		if err != nil {
+			return "", err
+		}
 
-			bn := strconv.Itoa(b.BuildNum)
-			return bn, nil
+		for _, b := range cibuilds {
+			// we're looking for the sha
+			if b.BuildParameters["CIRCLE_JOB"] == "build-linux" &&
+				b.VcsRevision == sha &&
+				b.Status == "success" {
+
+				bn := strconv.Itoa(b.BuildNum)
+				return bn, nil
+			}
 		}
 	}
+
 	return "", fmt.Errorf("cannot find TinyGo build for %s", sha)
 }
 
@@ -99,20 +103,24 @@ func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (string, err
 	}
 
 	client := &circleci.Client{}
-	cibuilds, err := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 100, 0)
-	if err != nil {
-		return "", err
-	}
 
-	for _, b := range cibuilds {
-		if b.BuildParameters["CIRCLE_JOB"] == "build-linux" &&
-			start.Before(*b.StartTime) &&
-			b.VcsRevision == sha &&
-			b.Status == "success" {
+	for offset := 0; offset <= 500; offset += 100 {
+		cibuilds, err := client.ListRecentBuildsForProject("github", ghorg, ghrepo, "", "", 100, offset)
+		if err != nil {
+			return "", err
+		}
 
-			bn := strconv.Itoa(b.BuildNum)
-			return bn, nil
+		for _, b := range cibuilds {
+			if b.BuildParameters["CIRCLE_JOB"] == "build-linux" &&
+				start.Before(*b.StartTime) &&
+				b.VcsRevision == sha &&
+				b.Status == "success" {
+
+				bn := strconv.Itoa(b.BuildNum)
+				return bn, nil
+			}
 		}
 	}
+
 	return "", fmt.Errorf("cannot find TinyGo build for %s", sha)
 }
