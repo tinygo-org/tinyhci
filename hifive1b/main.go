@@ -5,15 +5,15 @@ package main
 // Wire up the pins, and run it while connected to the USB port.
 //
 // Digital read/write tests:
-//	D12 <--> G
-//	D11 <--> 3V
-//	D10 <--> D9
+//	D4 <--> G
+//	D2 <--> 3V
+//	D0 <--> D3
 //
 // I2C tests:
-// 	HiFive1b SCL <--> MPU-6050 SCL
-// 	HiFive1b SDA <--> MPU-6050 SDA
+// 	HiFive1b SCL (D19) <--> MPU-6050 SCL
+// 	HiFive1b SDA (D18) <--> MPU-6050 SDA
 // 	HiFive1b G <--> MPU-6050 GND
-// 	HiFive1b D7 <--> MPU-6050 VCC
+// 	HiFive1b D9 <--> MPU-6050 VCC
 //
 import (
 	"machine"
@@ -25,35 +25,35 @@ import (
 
 var (
 	// used by digital tests
-	readV    = machine.D11
-	readG    = machine.D12
-	readpin  = machine.D9
-	writepin = machine.D10
+	readV    = machine.D2
+	readG    = machine.D4
+	readpin  = machine.D0
+	writepin = machine.D3
 
 	// used by i2c tests
 	accel    *mpu6050.Device
-	powerpin = machine.D7
+	powerpin = machine.D9
 
 	serial = machine.UART0
 )
 
 func main() {
 	serial.Configure(machine.UARTConfig{})
-	//machine.I2C0.Configure(machine.I2CConfig{})
+	machine.I2C0.Configure(machine.I2CConfig{})
 
 	waitForStart()
 
 	digitalReadVoltage()
 	digitalReadGround()
 	digitalWrite()
-	//i2cConnection()
+	i2cConnection()
 
 	endTests()
 }
 
 // wait for keypress on serial port to start test suite.
 func waitForStart() {
-	//time.Sleep(3 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	println("=== TINYGO INTEGRATION TESTS ===")
 	println("Press 't' key to begin running tests...")
@@ -147,21 +147,15 @@ func i2cConnection() {
 	a := mpu6050.New(machine.I2C0)
 	accel = &a
 
-	printtest("i2cConnectionNoPower")
+	printtest("i2cConnection")
 
-	// should not be connected when not powered
+	// have to recycle power
 	powerpin.Low()
-	time.Sleep(100 * time.Millisecond)
-	if accel.Connected() {
-		printtestresult("fail")
-	} else {
-		printtestresult("pass")
-	}
+	time.Sleep(500 * time.Millisecond)
 
-	printtest("i2cConnectionPower")
 	// turn on power and should be connected now
 	powerpin.High()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 
 	accel.Configure()
 	time.Sleep(400 * time.Millisecond)
