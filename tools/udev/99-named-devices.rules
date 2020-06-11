@@ -15,3 +15,9 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", SYMLINK+="a
 
 # Microbit
 SUBSYSTEM=="tty", ATTRS{idVendor}=="0d28", ATTRS{idProduct}=="0204", SYMLINK+="microbit"
+
+# HiFive1B JLink
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1366", SYMLINK+="jlink"
+
+# HiFive1B UART adaptor
+SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", SYMLINK+="hifive1b"
