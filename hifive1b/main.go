@@ -53,7 +53,7 @@ func main() {
 
 // wait for keypress on serial port to start test suite.
 func waitForStart() {
-	time.Sleep(3 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	println("=== TINYGO INTEGRATION TESTS ===")
 	println("Press 't' key to begin running tests...")
