@@ -45,7 +45,7 @@ test-hifive: build/testrunner
 	tinygo flash -size short -target=hifive1b ./hifive1b/
 	@sleep 5.0s
 	@echo "Running tests..."
-	./build/testrunner /dev/ttyACM0 115200 5
+	./build/testrunner /dev/hifive1b 115200 5
 
 update-go:
 	@test "$(CURRENT_GOVERSION)" = "$(TARGET_GOVERSION)" && ( echo "$(RED)$(TARGET_GOVERSION) has already been installed$(NOCOLOR)\n" ; exit 1 )
