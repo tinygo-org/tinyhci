@@ -46,6 +46,13 @@ var (
 			baud:        115200,
 			resetpause:  2 * time.Second,
 		},
+		&Board{
+			target:      "hifive1b",
+			displayname: "SiFive HiFive1 Rev.B",
+			port:        "hifive1b",
+			baud:        115200,
+			resetpause:  5 * time.Second,
+		},
 	}
 )
 
