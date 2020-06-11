@@ -27,7 +27,7 @@ var (
 	// used by digital tests
 	readV    = machine.D2
 	readG    = machine.D4
-	readpin  = machine.D0
+	readpin  = machine.D5
 	writepin = machine.D3
 
 	// used by i2c tests
@@ -84,6 +84,7 @@ func digitalReadVoltage() {
 	printtest("digitalReadVoltage")
 
 	readV.Configure(machine.PinConfig{Mode: machine.PinInput})
+	time.Sleep(100 * time.Millisecond)
 
 	// should be on
 	if readV.Get() {
@@ -99,6 +100,7 @@ func digitalReadGround() {
 	printtest("digitalReadGround")
 
 	readG.Configure(machine.PinConfig{Mode: machine.PinInput})
+	time.Sleep(100 * time.Millisecond)
 
 	// should be off
 	if readG.Get() {
@@ -113,6 +115,7 @@ func digitalReadGround() {
 func digitalWrite() {
 	readpin.Configure(machine.PinConfig{Mode: machine.PinInput})
 	writepin.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	time.Sleep(100 * time.Millisecond)
 
 	printtest("digitalWriteOn")
 	writepin.High()
@@ -143,6 +146,7 @@ func digitalWrite() {
 // checks to see if an attached MPU-6050 accelerometer is connected.
 func i2cConnection() {
 	powerpin.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	time.Sleep(100 * time.Millisecond)
 
 	a := mpu6050.New(machine.I2C0)
 	accel = &a
