@@ -10,6 +10,7 @@ Currently implemented integration tests for:
 - Arduino Nano33-IoT
 - Arduino Uno
 - bbc:microbit
+- SiFive HiFive1 RevB
 
 ## How it works
 
