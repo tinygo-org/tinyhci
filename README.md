@@ -6,6 +6,7 @@ Used to test actual hardware connections for microcontrollers. It is intended to
 
 Currently implemented integration tests for:
 
+- Adafruit Circuit Playground Express
 - Adafruit ItsyBitsy-M4
 - Arduino Nano33-IoT
 - Arduino Uno
