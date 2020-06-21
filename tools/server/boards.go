@@ -53,6 +53,13 @@ var (
 			baud:        115200,
 			resetpause:  5 * time.Second,
 		},
+		&Board{
+			target:      "circuitplay-express",
+			displayname: "Adafruit Circuit Playground Express",
+			port:        "circuitplay_express",
+			baud:        115200,
+			resetpause:  2 * time.Second,
+		},
 	}
 )
 

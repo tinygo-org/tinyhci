@@ -21,3 +21,6 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="1366", SYMLINK+="jlink"
 
 # HiFive1B UART adaptor
 SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", SYMLINK+="hifive1b"
+
+# Adafruit Circuit Playground Express
+SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="8018", SYMLINK+="circuitplay_express"
