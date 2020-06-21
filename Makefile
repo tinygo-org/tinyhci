@@ -48,12 +48,12 @@ test-hifive: build/testrunner
 	./build/testrunner /dev/hifive1b 115200 5
 
 test-circuitplay-express: build/testrunner
-#	tinygo flash -size short -target=circuitplay-express -port=/dev/circuitplay_express ./circuitplay-express/
-	tinygo flash -size short -target=circuitplay-express ./circuitplay-express/
+	tinygo flash -size short -target=circuitplay-express -port=/dev/circuitplay_express ./circuitplay-express/
+#	tinygo flash -size short -target=circuitplay-express ./circuitplay-express/
 	@sleep 2.0s
 	@echo "Running tests..."
-#	./build/testrunner /dev/circuitplay_express 115200 5
-	./build/testrunner /dev/ttyACM0 115200 5
+	./build/testrunner /dev/circuitplay_express 115200 5
+#	./build/testrunner /dev/ttyACM0 115200 5
 
 update-go:
 	@test "$(CURRENT_GOVERSION)" = "$(TARGET_GOVERSION)" && ( echo "$(RED)$(TARGET_GOVERSION) has already been installed$(NOCOLOR)\n" ; exit 1 )
