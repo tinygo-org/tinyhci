@@ -15,6 +15,8 @@ Currently implemented integration tests for:
 
 ## How it works
 
+![Build Status](./images/tinyhci-tests-passed.png)
+
 TinyHCI is a Github application that monitors commits to the TinyGo project, and then triggers tests of the physical hardware.
 
 It uses the webhook interface using the Github Checks API to listen for requests to run check to the target repository, and then will do the following:
