@@ -156,10 +156,9 @@ func (build Build) reloadCheckRuns() error {
 	return nil
 }
 
-// reload the check runs from github for this build
-func findQueuedCheckRuns(sha string) ([]*github.CheckRun, error) {
+// reload check runs from github for this build
+func findCheckRuns(sha, status string) ([]*github.CheckRun, error) {
 	runs := make([]*github.CheckRun, 0)
-	status := "queued"
 	opts := github.ListCheckRunsOptions{Status: &status}
 	res, _, err := client.Checks.ListCheckRunsForRef(context.Background(), ghorg, ghrepo, sha, &opts)
 	if err != nil {
