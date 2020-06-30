@@ -303,8 +303,8 @@ func handlePreviouslyQueuedBuilds(buildsCh chan *Build) {
 	}
 
 	for _, cib := range cibuilds {
-		// any pending checkruns for this build? restart them
-		runs, err := findCheckRuns(cib.VcsRevision, "pending")
+		// any in_progress checkruns for this build? restart them
+		runs, err := findCheckRuns(cib.VcsRevision, "in_progress")
 		if err != nil {
 			log.Println(err)
 			return
