@@ -56,7 +56,7 @@ test-circuitplay-express: build/testrunner
 #	./build/testrunner /dev/ttyACM0 115200 5
 
 test-maixbit: build/testrunner
-	tinygo flash -size short -target=maixbit ./maixbit/
+	tinygo flash -size short -target=maixbit -port=/dev/maixbit ./maixbit/
 	@sleep 5.0s
 	@echo "Running tests..."
 	./build/testrunner /dev/maixbit 115200 5
