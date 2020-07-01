@@ -60,6 +60,13 @@ var (
 			baud:        115200,
 			resetpause:  2 * time.Second,
 		},
+		&Board{
+			target:      "maixbit",
+			displayname: "Sipeed MAix Bit",
+			port:        "/dev/ttyUSB0",
+			baud:        115200,
+			resetpause:  2 * time.Second,
+		},
 	}
 )
 
