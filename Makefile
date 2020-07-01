@@ -55,6 +55,12 @@ test-circuitplay-express: build/testrunner
 	./build/testrunner /dev/circuitplay_express 115200 5
 #	./build/testrunner /dev/ttyACM0 115200 5
 
+test-maixbit: build/testrunner
+	tinygo flash -size short -target=maixbit ./maixbit/
+	@sleep 5.0s
+	@echo "Running tests..."
+	./build/testrunner /dev/maixbit 115200 5
+
 update-go:
 	@test "$(CURRENT_GOVERSION)" = "$(TARGET_GOVERSION)" && ( echo "$(RED)$(TARGET_GOVERSION) has already been installed$(NOCOLOR)\n" ; exit 1 )
 	wget "https://dl.google.com/go/$(TARGET_GOVERSION).linux-amd64.tar.gz" -O /tmp/go.tar.gz

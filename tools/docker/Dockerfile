@@ -1,12 +1,14 @@
 FROM debian:stable-slim AS tinygohci-base
 
 RUN apt-get clean && apt-get update && \
-    apt-get install -y wget gcc gcc-avr avr-libc avrdude git make build-essential libreadline-dev libwxgtk3.0-*
+    apt-get install -y wget gcc gcc-avr avr-libc avrdude git make build-essential libreadline-dev libwxgtk3.0-* python3 python3-pip
 
 RUN git clone https://github.com/shumatech/BOSSA.git && \
     cd BOSSA && \
     make && \
     cp bin/bossac /usr/local/bin
+
+RUN pip3 install kflash
 
 ENV GO_RELEASE=1.14.2
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \

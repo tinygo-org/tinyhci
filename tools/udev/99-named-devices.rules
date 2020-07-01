@@ -24,3 +24,6 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", SYMLINK+="hifive1b"
 
 # Adafruit Circuit Playground Express
 SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="8018", SYMLINK+="circuitplay_express"
+
+# Sipeed MAix Bit
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", SYMLINK+="maixbit"
