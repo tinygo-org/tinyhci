@@ -56,10 +56,12 @@ test-circuitplay-express: build/testrunner
 #	./build/testrunner /dev/ttyACM0 115200 5
 
 test-maixbit: build/testrunner
-	tinygo flash -size short -target=maixbit -port=/dev/maixbit ./maixbit/
-	@sleep 5.0s
+	tinygo flash -size short -target=maixbit -port=/dev/ttyUSB0 ./maixbit/
+#	tinygo flash -size short -target=maixbit -port=/dev/maixbit ./maixbit/
+	@sleep 2.0s
 	@echo "Running tests..."
-	./build/testrunner /dev/maixbit 115200 5
+	./build/testrunner /dev/ttyUSB0 115200 2
+#	./build/testrunner /dev/maixbit 115200 2
 
 update-go:
 	@test "$(CURRENT_GOVERSION)" = "$(TARGET_GOVERSION)" && ( echo "$(RED)$(TARGET_GOVERSION) has already been installed$(NOCOLOR)\n" ; exit 1 )

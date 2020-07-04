@@ -10,7 +10,7 @@ package main
 //	D10 <--> D15
 //
 // Digital read/write tests (GPIOHS):
-//	D16 <--> G
+//	D21 <--> G
 //	D17 <--> 3V
 //	D18 <--> D19
 //
@@ -25,7 +25,7 @@ import (
 
 	"time"
 
-	"tinygo.org/x/drivers/tmp102"
+	"tinygo.org/x/drivers/mpu6050"
 )
 
 var (
@@ -42,7 +42,7 @@ var (
 	writepinGPIOHS = machine.D19
 
 	// used by i2c tests
-	thermo   *tmp102.Device
+	accel    *mpu6050.Device
 	powerpin = machine.D33
 
 	serial = machine.UART0
@@ -226,10 +226,10 @@ func i2cConnection() {
 	powerpin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	time.Sleep(100 * time.Millisecond)
 
-	a := tmp102.New(machine.I2C0)
-	thermo = &a
+	a := mpu6050.New(machine.I2C0)
+	accel = &a
 
-	printtest("i2cConnection (TMP102)")
+	printtest("i2cConnection (MPU6050)")
 
 	// have to recycle power
 	powerpin.Low()
@@ -239,10 +239,10 @@ func i2cConnection() {
 	powerpin.High()
 	time.Sleep(500 * time.Millisecond)
 
-	thermo.Configure(tmp102.Config{})
+	accel.Configure()
 	time.Sleep(400 * time.Millisecond)
 
-	if !thermo.Connected() {
+	if !accel.Connected() {
 		printtestresult("fail")
 		return
 	}

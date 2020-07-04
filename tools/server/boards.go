@@ -62,7 +62,7 @@ var (
 		},
 		&Board{
 			target:      "maixbit",
-			displayname: "Sipeed MAix Bit",
+			displayname: "Sipeed MAix BiT",
 			port:        "maixbit",
 			baud:        115200,
 			resetpause:  2 * time.Second,
