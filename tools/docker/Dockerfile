@@ -8,7 +8,7 @@ RUN git clone https://github.com/shumatech/BOSSA.git && \
     make && \
     cp bin/bossac /usr/local/bin
 
-RUN pip3 install kflash
+RUN pip3 install git+https://github.com/kendryte/kflash.py.git
 
 ENV GO_RELEASE=1.14.2
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
