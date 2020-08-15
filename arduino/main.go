@@ -48,7 +48,7 @@ var (
 
 const (
 	maxanalog       = 65535
-	allowedvariance = 512
+	allowedvariance = 2048
 )
 
 func main() {
@@ -171,7 +171,7 @@ func analogReadVoltage() {
 		return
 	} else {
 		printtestresult("fail")
-		printfailexpected("'val >= 65535-256'")
+		printfailexpected("'val >= 65535-2048'")
 		printfailactual(val)
 	}
 }
@@ -190,7 +190,7 @@ func analogReadGround() {
 	} else {
 		printtestresult("fail")
 
-		printfailexpected("'val <= 256'")
+		printfailexpected("'val <= 2048'")
 		printfailactual(val)
 	}
 }
@@ -210,7 +210,7 @@ func analogReadHalfVoltage() {
 	}
 	printtestresult("fail")
 
-	printfailexpected("'val <= 65535/2+256 && val >= 65535/2-256'")
+	printfailexpected("'val <= 65535/2+2048 && val >= 65535/2-2048'")
 	printfailactual(val)
 }
 
