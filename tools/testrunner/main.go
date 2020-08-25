@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"go.bug.st/serial"
 )
@@ -31,18 +32,27 @@ func main() {
 
 	// Reads up to 100 bytes
 	buff := make([]byte, 100)
+	ch := make(chan string, 1)
+
 	result := ""
 	for {
-		n, err := p.Read(buff)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "serial read error: %v\n", err)
-			os.Exit(1)
-		}
-		if n == 0 {
+		go func() {
+			n, err := p.Read(buff)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "serial read error: %v\n", err)
+				os.Exit(1)
+			}
+			ch <- string(buff[:n])
+		}()
+
+		select {
+		case res := <-ch:
+			result = result + res
+		case <-time.After(5 * time.Second):
 			fmt.Println("no serial data from device")
 			os.Exit(1)
 		}
-		result = result + string(buff[:n])
+
 		if strings.Contains(result, "begin running tests...") {
 			break
 		}
@@ -54,17 +64,23 @@ func main() {
 	// get test result
 	result = ""
 	for {
-		// Reads up to 100 bytes
-		n, err := p.Read(buff)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "serial read error: %v\n", err)
-			os.Exit(1)
-		}
-		if n == 0 {
+		go func() {
+			n, err := p.Read(buff)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "serial read error: %v\n", err)
+				os.Exit(1)
+			}
+			ch <- string(buff[:n])
+		}()
+
+		select {
+		case res := <-ch:
+			result = result + res
+		case <-time.After(5 * time.Second):
 			fmt.Println("no serial data from device")
 			os.Exit(1)
 		}
-		result = result + string(buff[:n])
+
 		if strings.Contains(result, "Tests complete.") {
 			fmt.Println(result)
 			if strings.Contains(result, "fail") {
