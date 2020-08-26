@@ -48,7 +48,7 @@ func main() {
 		select {
 		case res := <-ch:
 			result = result + res
-		case <-time.After(5 * time.Second):
+		case <-time.After(10 * time.Second):
 			fmt.Println("no serial data from device")
 			os.Exit(1)
 		}
@@ -76,7 +76,7 @@ func main() {
 		select {
 		case res := <-ch:
 			result = result + res
-		case <-time.After(5 * time.Second):
+		case <-time.After(10 * time.Second):
 			fmt.Println("no serial data from device")
 			os.Exit(1)
 		}
