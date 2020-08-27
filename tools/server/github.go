@@ -26,7 +26,9 @@ func authenticateGithubClient(appid, installid int64, privatekeyfile string) (*g
 func (build Build) pendingCheckSuite() {
 	log.Printf("Github check suite pending for %s\n", build.sha)
 	for _, board := range boards {
-		build.pendingCheckRun(board.target)
+		if board.enabled {
+			build.pendingCheckRun(board.target)
+		}
 	}
 }
 

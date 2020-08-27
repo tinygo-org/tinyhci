@@ -14,6 +14,7 @@ type Board struct {
 	port        string
 	baud        int
 	resetpause  time.Duration
+	enabled     bool
 }
 
 var (
@@ -24,6 +25,7 @@ var (
 			port:        "itsybitsy_m4",
 			baud:        115200,
 			resetpause:  2 * time.Second,
+			enabled:     true,
 		},
 		&Board{
 			target:      "arduino",
@@ -31,6 +33,7 @@ var (
 			port:        "arduino_uno",
 			baud:        57600,
 			resetpause:  5 * time.Second,
+			enabled:     true,
 		},
 		&Board{
 			target:      "arduino-nano33",
@@ -38,6 +41,7 @@ var (
 			port:        "arduino_nano33",
 			baud:        115200,
 			resetpause:  2 * time.Second,
+			enabled:     true,
 		},
 		&Board{
 			target:      "microbit",
@@ -45,20 +49,23 @@ var (
 			port:        "microbit",
 			baud:        115200,
 			resetpause:  2 * time.Second,
+			enabled:     true,
 		},
-		// &Board{
-		// 	target:      "hifive1b",
-		// 	displayname: "SiFive HiFive1 Rev.B",
-		// 	port:        "hifive1b",
-		// 	baud:        115200,
-		// 	resetpause:  5 * time.Second,
-		// },
+		&Board{
+			target:      "hifive1b",
+			displayname: "SiFive HiFive1 Rev.B",
+			port:        "hifive1b",
+			baud:        115200,
+			resetpause:  5 * time.Second,
+			enabled:     false,
+		},
 		&Board{
 			target:      "circuitplay-express",
 			displayname: "Adafruit Circuit Playground Express",
 			port:        "circuitplay_express",
 			baud:        115200,
 			resetpause:  2 * time.Second,
+			enabled:     true,
 		},
 		&Board{
 			target:      "maixbit",
@@ -66,6 +73,7 @@ var (
 			port:        "maixbit00",
 			baud:        115200,
 			resetpause:  2 * time.Second,
+			enabled:     true,
 		},
 	}
 )

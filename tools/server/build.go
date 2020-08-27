@@ -29,6 +29,11 @@ func NewBuild(sha string) *Build {
 }
 
 func (build Build) processBoardRun(board *Board) {
+	if !board.enabled {
+		log.Printf("Board %s has been disabled, so passing.\n", board.displayname)
+		build.passCheckRun(board.target, "Board disabled in TinyHCI.")
+	}
+
 	log.Printf("Flashing board %s\n", board.displayname)
 	fout, err := board.flash(build.sha)
 	if err != nil {
