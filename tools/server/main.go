@@ -202,6 +202,7 @@ func processBuilds(builds chan *Build) {
 				target, err := parseTarget(run.GetName())
 				if err != nil {
 					log.Println(err)
+					build.failCheckRun(target, err.Error())
 					continue
 				}
 				board := GetBoard(target)
