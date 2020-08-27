@@ -199,9 +199,15 @@ func processBuilds(builds chan *Build) {
 
 			log.Printf("Running checks for commit %s\n", build.sha)
 			for _, run := range build.runs {
-				target, _ := parseTarget(run.GetName())
+				target, err := parseTarget(run.GetName())
+				if err != nil {
+					log.Println(err)
+					continue
+				}
 				board := GetBoard(target)
-				build.processBoardRun(board)
+				if board != nil {
+					build.processBoardRun(board)
+				}
 			}
 		}
 	}
