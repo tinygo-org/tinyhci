@@ -57,7 +57,7 @@ var (
 			port:        "hifive1b",
 			baud:        115200,
 			resetpause:  5 * time.Second,
-			enabled:     false,
+			enabled:     true,
 		},
 		&Board{
 			target:      "circuitplay-express",
