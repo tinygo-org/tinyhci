@@ -22,6 +22,7 @@ package main
 //
 import (
 	"machine"
+	"strconv"
 
 	"time"
 
@@ -49,7 +50,7 @@ var (
 
 const (
 	maxanalog         = 65535
-	allowedvariance   = 8192
+	allowedvariance   = 9216
 	numberAnalogReads = 10
 )
 
@@ -186,7 +187,7 @@ func analogReadVoltage() {
 		return
 	} else {
 		printtestresult("fail")
-		printfailexpected("'val >= 65535-8192'")
+		printfailexpected("'val >= 65535-" + strconv.Itoa(allowedvariance) + "'")
 		printfailactual(val)
 	}
 }
@@ -214,7 +215,7 @@ func analogReadGround() {
 	} else {
 		printtestresult("fail")
 
-		printfailexpected("'val <= 8192'")
+		printfailexpected("'val <= " + strconv.Itoa(allowedvariance) + "'")
 		printfailactual(val)
 	}
 }
@@ -242,7 +243,7 @@ func analogReadHalfVoltage() {
 		return
 	}
 	printtestresult("fail")
-	printfailexpected("'val <= 65535/2+8192 && val >= 65535/2-8192'")
+	printfailexpected("'val <= 65535/2+" + strconv.Itoa(allowedvariance) + " && val >= 65535/2-" + strconv.Itoa(allowedvariance) + "'")
 	printfailactual(val)
 }
 

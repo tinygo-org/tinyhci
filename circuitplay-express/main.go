@@ -19,6 +19,7 @@ package main
 //
 import (
 	"machine"
+	"strconv"
 
 	"time"
 
@@ -183,7 +184,7 @@ func analogReadVoltage() {
 		return
 	} else {
 		printtestresult("fail")
-		printfailexpected("'val >= 65535-1024'")
+		printfailexpected("'val >= 65535-" + strconv.Itoa(allowedvariance) + "'")
 		printfailactual(val)
 	}
 }
@@ -210,7 +211,7 @@ func analogReadGround() {
 		return
 	} else {
 		printtestresult("fail")
-		printfailexpected("'val <= 1024'")
+		printfailexpected("'val <= " + strconv.Itoa(allowedvariance) + "'")
 		printfailactual(val)
 	}
 }
@@ -239,7 +240,7 @@ func analogReadHalfVoltage() {
 	}
 
 	printtestresult("fail")
-	printfailexpected("'val <= 65535/2+1024 && val >= 65535/2-1024'")
+	printfailexpected("'val <= 65535/2+" + strconv.Itoa(allowedvariance) + " && val >= 65535/2-" + strconv.Itoa(allowedvariance) + "'")
 	printfailactual(val)
 }
 
