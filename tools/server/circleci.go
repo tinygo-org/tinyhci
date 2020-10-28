@@ -66,7 +66,7 @@ func getTinygoBinaryURL(buildNum string) (string, error) {
 			return a.URL, nil
 		}
 	}
-	return "", errors.New("cannot find TinyGo build artifact file")
+	return "", fmt.Errorf("cannot find build artifact file for build %s", buildNum)
 }
 
 func getCIBuildNumFromSHA(sha string) (string, error) {
