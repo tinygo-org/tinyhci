@@ -109,7 +109,9 @@ func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (string, err
 			return "", err
 		}
 
-		for _, b := range cibuilds {
+		// check in reverse order
+		for i := len(cibuilds) - 1; i >= 0; i-- {
+			b := cibuilds[i]
 			if b.BuildParameters["CIRCLE_JOB"] == "build-linux" &&
 				start.Before(*b.StartTime) &&
 				b.VcsRevision == sha {
