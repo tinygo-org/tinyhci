@@ -114,7 +114,8 @@ func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (string, err
 			b := cibuilds[i]
 			if b.BuildParameters["CIRCLE_JOB"] == "build-linux" &&
 				start.Before(*b.StartTime) &&
-				b.VcsRevision == sha {
+				b.VcsRevision == sha &&
+				b.Status == "success" {
 
 				bn := strconv.Itoa(b.BuildNum)
 				return bn, nil
