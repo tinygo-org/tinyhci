@@ -147,3 +147,24 @@ stop-ngrok-service:
 
 docker:
 	docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz .
+
+powercycle-arduino-nano33:
+	@uhubctl -l 1-2.4.4 -a cycle -p 1
+
+powercycle-microbit:
+	@uhubctl -l 1-2.4.4 -a cycle -p 2
+
+powercycle-arduino-uno:
+	@uhubctl -l 1-2.4.4 -a cycle -p 3
+
+powercycle-itsybitsy-m4:
+	@uhubctl -l 1-2.4.4 -a cycle -p 4
+
+powercycle-hifive:
+	@uhubctl -l 1-2.4 -a cycle -p 3
+
+powercycle-circuitplay-express:
+	@uhubctl -l 1-2.4 -a cycle -p 1
+
+powercycle-maixbit:
+	@uhubctl -l 1-2 -a cycle -p 1
