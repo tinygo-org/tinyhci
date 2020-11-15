@@ -50,7 +50,7 @@ var (
 
 const (
 	maxanalog         = 65535
-	allowedvariance   = 9216
+	allowedvariance   = 9900
 	numberAnalogReads = 10
 )
 
