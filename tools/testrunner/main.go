@@ -20,7 +20,7 @@ func main() {
 
 	port := os.Args[1]
 	speed, _ := strconv.Atoi(os.Args[2])
-	//delayResponse, _ := strconv.Atoi(os.Args[3])
+	delay, _ := strconv.Atoi(os.Args[3])
 
 	// open serial port
 	p, err := serial.Open(port, &serial.Mode{BaudRate: speed})
@@ -48,7 +48,7 @@ func main() {
 		select {
 		case res := <-ch:
 			result = result + res
-		case <-time.After(10 * time.Second):
+		case <-time.After(time.Duration(delay) * time.Second):
 			fmt.Println("no serial data from device")
 			os.Exit(1)
 		}
