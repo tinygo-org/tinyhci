@@ -49,8 +49,8 @@ func main() {
 		case res := <-ch:
 			result = result + res
 		case <-time.After(time.Duration(delay) * time.Second):
-			fmt.Println("no serial data from device")
-			os.Exit(1)
+			fmt.Println("no serial data from device yet. begin running tests anyhow...")
+			break
 		}
 
 		if strings.Contains(result, "begin running tests...") {
