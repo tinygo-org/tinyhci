@@ -20,7 +20,6 @@ func main() {
 
 	port := os.Args[1]
 	speed, _ := strconv.Atoi(os.Args[2])
-	delay, _ := strconv.Atoi(os.Args[3])
 
 	// open serial port
 	p, err := serial.Open(port, &serial.Mode{BaudRate: speed})
@@ -33,28 +32,30 @@ func main() {
 	// Reads up to 100 bytes
 	buff := make([]byte, 100)
 	ch := make(chan string, 1)
-
-	result := ""
-	for {
-		go func() {
+	go func() {
+		for {
 			n, err := p.Read(buff)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "serial read error: %v\n", err)
 				os.Exit(1)
 			}
 			ch <- string(buff[:n])
-		}()
+		}
+	}()
 
+	result := ""
+START:
+	for {
 		select {
 		case res := <-ch:
 			result = result + res
-		case <-time.After(time.Duration(delay) * time.Second):
+		case <-time.After(10 * time.Second):
 			fmt.Println("no serial data from device yet. begin running tests anyhow...")
-			break
+			break START
 		}
 
 		if strings.Contains(result, "begin running tests...") {
-			break
+			break START
 		}
 	}
 
@@ -64,15 +65,6 @@ func main() {
 	// get test result
 	result = ""
 	for {
-		go func() {
-			n, err := p.Read(buff)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "serial read error: %v\n", err)
-				os.Exit(1)
-			}
-			ch <- string(buff[:n])
-		}()
-
 		select {
 		case res := <-ch:
 			result = result + res
