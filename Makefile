@@ -150,13 +150,19 @@ docker:
 
 powercycle-arduino-nano33:
 	@uhubctl -l 1-2.4.4 -a off -p 1
-	@sudo udevadm trigger --action=remove /sys/bus/usb/devices/1-2.4.4.1/
+	DEV="/sys/bus/usb/devices/1-2.4.4.1/"; \
+	if [ -d $$DEV ]; then \
+		sudo udevadm trigger --action=remove $$DEV ; \
+	fi
 	@sleep 3.0s
 	@uhubctl -l 1-2.4.4 -a on -p 1
 
 powercycle-microbit:
 	@uhubctl -l 1-2.4.4 -a off -p 2
-	@sudo udevadm trigger --action=remove /sys/bus/usb/devices/1-2.4.4.2/
+	DEV="/sys/bus/usb/devices/1-2.4.4.2/"; \
+	if [ -d $$DEV ]; then \
+		sudo udevadm trigger --action=remove $$DEV ; \
+	fi
 	@sleep 3.0s
 	@uhubctl -l 1-2.4.4 -a on -p 2
 
@@ -165,20 +171,36 @@ powercycle-arduino-uno:
 
 powercycle-itsybitsy-m4:
 	@uhubctl -l 1-2.4.4 -a off -p 4
-	@sudo udevadm trigger --action=remove /sys/bus/usb/devices/1-2.4.4.4/
+	DEV="/sys/bus/usb/devices/1-2.4.4.4/"; \
+	if [ -d $$DEV ]; then \
+		sudo udevadm trigger --action=remove $$DEV ; \
+	fi
 	@sleep 3.0s
 	@uhubctl -l 1-2.4.4 -a on -p 4
 
 powercycle-hifive:
 	@uhubctl -l 1-2.4 -a off -p 3
-	@sudo udevadm trigger --action=remove /sys/bus/usb/devices/1-2.4.3/
+	DEV="/sys/bus/usb/devices/1-2.4.3/"; \
+	if [ -d $$DEV ]; then \
+		sudo udevadm trigger --action=remove $$DEV ; \
+	fi
 	@sleep 3.0s
-	@uhubctl -l 1-2.4 -a cycle -p 2
+	@uhubctl -l 1-2.4 -a off -p 2
+	DEV="/sys/bus/usb/devices/1-2.4.2/"; \
+	if [ -d $$DEV ]; then \
+		sudo udevadm trigger --action=remove $$DEV ; \
+	fi
+	@sleep 3.0s
+	@uhubctl -l 1-2.4 -a on -p 2
+	@sleep 3.0s
 	@uhubctl -l 1-2.4 -a on -p 3
 
 powercycle-circuitplay-express:
 	@uhubctl -l 1-2.4 -a off -p 1
-	@sudo udevadm trigger --action=remove /sys/bus/usb/devices/1-2.4.1/
+	DEV="/sys/bus/usb/devices/1-2.4.1/"; \
+	if [ -d $$DEV ]; then \
+		sudo udevadm trigger --action=remove $$DEV ; \
+	fi
 	@sleep 3.0s
 	@uhubctl -l 1-2.4 -a on -p 1
 
