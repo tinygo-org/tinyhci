@@ -1,7 +1,17 @@
 FROM debian:stable-slim AS tinygohci-base
 
 RUN apt-get clean && apt-get update && \
-    apt-get install -y wget gcc gcc-avr avr-libc avrdude git make build-essential libreadline-dev libwxgtk3.0-* python3 python3-pip
+    apt-get install -y wget gcc gcc-avr avr-libc avrdude git make build-essential libreadline-dev libwxgtk3.0-* python3 python3-pip \
+    git libncurses-dev flex bison gperf python-serial
+
+RUN mkdir -p /usr/local/esp && \
+    wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz && \
+    tar xfv xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz -C /usr/local/esp && \
+    rm xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
+ENV PATH=${PATH}:/usr/local/esp/xtensa-esp32-elf/bin
+
+RUN pip3 install esptool && \ 
+    esptool.py version
 
 RUN git clone https://github.com/shumatech/BOSSA.git && \
     cd BOSSA && \
@@ -10,14 +20,14 @@ RUN git clone https://github.com/shumatech/BOSSA.git && \
 
 RUN pip3 install git+https://github.com/kendryte/kflash.py.git
 
-ENV GO_RELEASE=1.15
+ENV GO_RELEASE=1.15.5
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
     tar xfv go${GO_RELEASE}.linux-amd64.tar.gz -C /usr/local && \
     rm go${GO_RELEASE}.linux-amd64.tar.gz
 ENV PATH=${PATH}:/usr/local/go/bin
 
 FROM tinygohci-base AS tinygohci-build
-ARG TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.14.0/tinygo0.14.0.linux-amd64.tar.gz
+ARG TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.16.0/tinygo0.16.0.linux-amd64.tar.gz
 RUN wget ${TINYGO_DOWNLOAD_URL} -O tinygo.tar.gz && \
     tar -xzf tinygo.tar.gz -C /usr/local && \
     rm tinygo.tar.gz
