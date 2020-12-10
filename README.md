@@ -6,12 +6,13 @@ Used to test actual hardware connections for microcontrollers. It is intended to
 
 Currently implemented integration tests for:
 
-- Adafruit Circuit Playground Express
-- Adafruit ItsyBitsy-M4
-- Arduino Nano33-IoT
-- Arduino Uno
-- bbc:microbit
-- SiFive HiFive1 RevB
+- Adafruit Circuit Playground Express (Microchip SAMD21x based on ARM Cortex-M0)
+- Adafruit ItsyBitsy-M4 (Microchip SAMD51x based on ARM Cortex-M4)
+- Arduino Nano33-IoT (Microchip SAMD21x based on ARM Cortex-M0)
+- Arduino Uno (Atmel ATmega328p based on AVR)
+- bbc:microbit (Nordic Semiconductor nRF51 based on ARM Cortex-M0)
+- SiFive HiFive1 RevB (Freedom E310 based on RISC-V)
+- Sipeed MAix BiT (Kendryte K210 based on RISC-V)
 
 ## How it works
 
