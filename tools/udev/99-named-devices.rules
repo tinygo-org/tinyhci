@@ -36,3 +36,6 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", SYMLINK+="m
 
 # ItsyBitsy-nRF52840
 SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="8051", SYMLINK+="itsybitsy_nrf52840"
+
+# ItsyBitsy-nRF52840 bootloader
+SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="0051", SYMLINK+="itsybitsy_nrf52840"
