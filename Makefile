@@ -1,7 +1,7 @@
 TARGET_GOVERSION := go1.15
 GOINSTALLED := $(shell command -v go 2> /dev/null)
 CURRENT_GOVERSION  := $(shell go version | awk '{print $$3}')
-TARGET_TINYGOVERSION := 0.14.1
+TARGET_TINYGOVERSION := 0.16.0
 TINYGOINSTALLED := $(shell command -v tinygo 2> /dev/null)
 CURRENT_TINYGOVERSION  := $(shell tinygo version | awk '{print $$3}')
 NOCOLOR := \033[0m
@@ -92,7 +92,7 @@ endif
 	tinygo version
 
 update-tinygo:
-	wget "$(TINYGOUPDATE)" -O /tmp/tinygo.tar.gz
+	wget "https://github.com/tinygo-org/tinygo/releases/download/v$(TARGET_TINYGOVERSION)/tinygo$(TARGET_TINYGOVERSION).linux-amd64.tar.gz" -O /tmp/tinygo.tar.gz
 	tar -xzf /tmp/tinygo.tar.gz -C /usr/local
 
 install-bossa:
