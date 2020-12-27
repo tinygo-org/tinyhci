@@ -148,6 +148,10 @@ stop-ngrok-service:
 docker:
 	docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz .
 
+install-udev-rules:
+	sudo cp tools/udev/99-named-devices.rules /etc/udev/rules.d/
+	sudo udevadm control --reload-rules && sudo udevadm trigger
+
 powercycle-arduino-nano33:
 	@uhubctl -l 1-2.4.4 -a off -p 1
 	DEV="/sys/bus/usb/devices/1-2.4.4.1/"; \
