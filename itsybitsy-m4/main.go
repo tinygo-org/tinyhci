@@ -42,7 +42,6 @@ var (
 	analogG    = machine.ADC{machine.A2}
 
 	// used by i2c tests
-	accel    *mpu6050.Device
 	powerpin = machine.D7
 
 	serial = machine.UART0
@@ -251,8 +250,7 @@ func i2cConnection() {
 	powerpin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	time.Sleep(100 * time.Millisecond)
 
-	a := mpu6050.New(machine.I2C0)
-	accel = &a
+	accel := mpu6050.New(machine.I2C0)
 
 	printtest("i2cConnectionNoPower")
 
@@ -268,10 +266,10 @@ func i2cConnection() {
 	printtest("i2cConnectionPower")
 	// turn on power and should be connected now
 	powerpin.High()
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	accel.Configure()
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	if !accel.Connected() {
 		printtestresult("fail")
