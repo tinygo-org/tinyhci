@@ -160,7 +160,7 @@ func digitalWrite() {
 
 // analog read of pin connected to supply voltage.
 func analogReadVoltage() {
-	analogV.Configure()
+	analogV.Configure(machine.ADCConfig{})
 
 	printtest("analogReadVoltage")
 
@@ -179,7 +179,7 @@ func analogReadVoltage() {
 
 // analog read of pin connected to ground.
 func analogReadGround() {
-	analogG.Configure()
+	analogG.Configure(machine.ADCConfig{})
 
 	printtest("analogReadGround")
 
@@ -199,7 +199,7 @@ func analogReadGround() {
 // analog read of pin connected to supply voltage that has been divided by 2
 // using resistors.
 func analogReadHalfVoltage() {
-	analogHalf.Configure()
+	analogHalf.Configure(machine.ADCConfig{})
 
 	printtest("analogReadHalfVoltage")
 
