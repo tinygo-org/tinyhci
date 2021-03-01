@@ -71,6 +71,13 @@ test-itsybitsy-nrf52840: build/testrunner
 #	./build/testrunner /dev/itsybitsy_nrf52840 115200 2
 	./build/testrunner /dev/ttyACM0 115200 2
 
+test-stm32f407disco: build/testrunner
+	tinygo flash -size short -target=stm32f4disco-1 ./stm32f4disco/
+	@sleep 3.0s
+	@echo "Running tests..."
+#	./build/testrunner /dev/hifive1b 115200 5
+	./build/testrunner /dev/ttyUSB0 115200 3
+
 update-go:
 	@test "$(CURRENT_GOVERSION)" = "$(TARGET_GOVERSION)" && ( echo "$(RED)$(TARGET_GOVERSION) has already been installed$(NOCOLOR)\n" ; exit 1 )
 	wget "https://dl.google.com/go/$(TARGET_GOVERSION).linux-amd64.tar.gz" -O /tmp/go.tar.gz

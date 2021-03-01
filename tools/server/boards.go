@@ -83,6 +83,14 @@ var (
 			resetpause:  2 * time.Second,
 			enabled:     false,
 		},
+		&Board{
+			target:      "stm32f4disco-1",
+			displayname: "STM32F407 Discovery",
+			port:        "stm32f4disco",
+			baud:        115200,
+			resetpause:  2 * time.Second,
+			enabled:     false,
+		},
 	}
 )
 

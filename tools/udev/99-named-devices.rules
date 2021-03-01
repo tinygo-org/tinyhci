@@ -40,8 +40,8 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="8051", SYMLINK+="i
 # ItsyBitsy-nRF52840 bootloader
 SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="0051", SYMLINK+="itsybitsy_nrf52840"
 
-# STM32F7Disco STLink
+# STM32F407 Discovery STLink
 SUBSYSTEM=="tty", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", SYMLINK+="stlink"
 
-# STM32F7Disco UART
-SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="stm32f7disco"
+# STM32F407 Discovery UART
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="stm32f4disco"
