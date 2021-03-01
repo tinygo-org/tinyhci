@@ -89,7 +89,7 @@ var (
 			port:        "stm32f4disco",
 			baud:        115200,
 			resetpause:  2 * time.Second,
-			enabled:     false,
+			enabled:     true,
 		},
 	}
 )
