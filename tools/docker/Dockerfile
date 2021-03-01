@@ -1,7 +1,7 @@
 FROM debian:stable-slim AS tinygohci-base
 
 RUN apt-get clean && apt-get update && \
-    apt-get install -y wget gcc gcc-avr avr-libc avrdude git make build-essential libreadline-dev libwxgtk3.0-* python3 python3-pip
+    apt-get install -y wget gcc gcc-avr avr-libc avrdude git make build-essential libreadline-dev libwxgtk3.0-* python3 python3-pip openocd
 
 RUN git clone https://github.com/shumatech/BOSSA.git && \
     cd BOSSA && \
