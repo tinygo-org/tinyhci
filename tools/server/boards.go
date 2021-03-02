@@ -117,6 +117,8 @@ func (board *Board) flash(sha string) (string, error) {
 		device,
 		"-v", "/media:/media:shared",
 		"-v", pwd+":/src",
+		"-v", "/dev/bus/usb:/dev/bus/usb",
+		"--device-cgroup-rule", "a 189:* rwm",
 		"--rm",
 		buildtag,
 		"tinygo", "flash",
