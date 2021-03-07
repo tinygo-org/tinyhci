@@ -10,14 +10,14 @@ RUN git clone https://github.com/shumatech/BOSSA.git && \
 
 RUN pip3 install git+https://github.com/kendryte/kflash.py.git
 
-ENV GO_RELEASE=1.15
+ENV GO_RELEASE=1.16
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
     tar xfv go${GO_RELEASE}.linux-amd64.tar.gz -C /usr/local && \
     rm go${GO_RELEASE}.linux-amd64.tar.gz
 ENV PATH=${PATH}:/usr/local/go/bin
 
 FROM tinygohci-base AS tinygohci-build
-ARG TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.14.0/tinygo0.14.0.linux-amd64.tar.gz
+ARG TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.17.0/tinygo0.17.0.linux-amd64.tar.gz
 RUN wget ${TINYGO_DOWNLOAD_URL} -O tinygo.tar.gz && \
     tar -xzf tinygo.tar.gz -C /usr/local && \
     rm tinygo.tar.gz
