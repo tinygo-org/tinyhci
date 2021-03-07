@@ -13,6 +13,7 @@ Currently implemented integration tests for:
 - bbc:microbit (Nordic Semiconductor nRF51 based on ARM Cortex-M0)
 - SiFive HiFive1 RevB (Freedom E310 based on RISC-V)
 - Sipeed MAix BiT (Kendryte K210 based on RISC-V)
+- STMicro STM32F407 Discovery (STMicro STM32F407VG based on ARM Cortex-M4)
 
 ## How it works
 
