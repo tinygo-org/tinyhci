@@ -1,4 +1,4 @@
-module tinygo.org/x/tinyhci/boards
+module tinygo.org/x/tinyhci/microbit
 
 go 1.16
 

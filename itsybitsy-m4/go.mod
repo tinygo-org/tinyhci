@@ -1,4 +1,4 @@
-module tinygo.org/x/tinyhci/boards
+module tinygo.org/x/tinyhci/itsybitsy-m4
 
 go 1.16
 

@@ -1,4 +1,4 @@
-module tinygo.org/x/tinyhci/boards
+module tinygo.org/x/tinyhci/arduino-nano33
 
 go 1.16
 
