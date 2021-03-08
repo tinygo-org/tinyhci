@@ -112,7 +112,7 @@ func (board *Board) flash(sha string) (string, error) {
 	buildtag := fmt.Sprintf("tinygohci:%s", sha[:7])
 	device := fmt.Sprintf("--device=/dev/%s", board.port)
 	port := fmt.Sprintf("-port=/dev/%s", board.port)
-	file := fmt.Sprintf("/src/%s/main.go", board.target)
+	file := fmt.Sprintf("/src/%s/", board.target)
 	out, err := exec.Command("docker", "run",
 		device,
 		"-v", "/media:/media:shared",
