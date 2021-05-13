@@ -33,8 +33,6 @@ var (
 
 	// used by i2c tests
 	accel *mpu6050.Device
-
-	serial = machine.UART0
 )
 
 func main() {
@@ -58,8 +56,8 @@ func waitForStart() {
 	println("Press 't' key to begin running tests...")
 
 	for {
-		if serial.Buffered() > 0 {
-			data, _ := serial.ReadByte()
+		if machine.Serial.Buffered() > 0 {
+			data, _ := machine.Serial.ReadByte()
 
 			if data != 't' {
 				time.Sleep(100 * time.Millisecond)
