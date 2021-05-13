@@ -43,8 +43,6 @@ var (
 
 	// used by i2c tests
 	powerpin = machine.D7
-
-	serial = machine.UART0
 )
 
 const (
@@ -53,7 +51,7 @@ const (
 )
 
 func main() {
-	serial.Configure(machine.UARTConfig{})
+	machine.Serial.Configure(machine.UARTConfig{})
 	machine.I2C0.Configure(machine.I2CConfig{})
 	machine.InitADC()
 
@@ -78,8 +76,8 @@ func waitForStart() {
 	println("Press 't' key to begin running tests...")
 
 	for {
-		if serial.Buffered() > 0 {
-			data, _ := serial.ReadByte()
+		if machine.Serial.Buffered() > 0 {
+			data, _ := machine.Serial.ReadByte()
 
 			if data != 't' {
 				time.Sleep(100 * time.Millisecond)
