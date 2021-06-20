@@ -8,5 +8,5 @@ require (
 	github.com/google/go-github/v31 v31.0.0
 	github.com/metanerd/go-circleci v0.3.2
 	go.bug.st/serial v1.1.0
-	tinygo.org/x/drivers v0.13.0
+	tinygo.org/x/drivers v0.16.0
 )
