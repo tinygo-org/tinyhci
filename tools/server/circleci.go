@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/metanerd/go-circleci"
+	"github.com/mattermost/go-circleci"
 )
 
 // CIBuildInfo is info from CircleCI webhook sent by the CircleCI Webhook Orb
