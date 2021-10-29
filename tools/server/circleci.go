@@ -126,7 +126,6 @@ func getCIBuildNumFromSHA(sha string) (int, error) {
 
 	for _, v := range wfr.Items {
 		if v.Status == "success" {
-			fmt.Println(v)
 			wf, err := getWorkflow(v.ID)
 			if err != nil {
 				return -1, err
@@ -173,7 +172,6 @@ func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (int, error)
 
 	for _, v := range wfr.Items {
 		if v.Status == "success" {
-			fmt.Println(v)
 			wf, err := getWorkflow(v.ID)
 			if err != nil {
 				return -1, err
@@ -218,7 +216,6 @@ func getRecentSuccessfulCIBuilds() ([]Pipeline, error) {
 
 	for _, v := range wfr.Items {
 		if v.Status == "success" {
-			fmt.Println(v)
 			wf, err := getWorkflow(v.ID)
 			if err != nil {
 				return pls, err
