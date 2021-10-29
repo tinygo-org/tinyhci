@@ -20,8 +20,9 @@ const (
 
 var (
 	// these will be overwritten by the ENV vars of the same name
-	ghorg  = "tinygo-org"
-	ghrepo = "tinygo"
+	citoken = "noneyet"
+	ghorg   = "tinygo-org"
+	ghrepo  = "tinygo"
 
 	ghwebhookpath = "/webhooks"
 	ciwebhookpath = "/buildhook"
@@ -43,6 +44,11 @@ func main() {
 	ciwebhookpath = os.Getenv("CIWEBHOOKPATH")
 	if ciwebhookpath == "" {
 		log.Fatal("You must set an ENV var with your CIWEBHOOKPATH")
+	}
+
+	citoken = os.Getenv("CITOKEN")
+	if citoken == "" {
+		log.Fatal("You must set an ENV var with your CITOKEN")
 	}
 
 	ghorg = os.Getenv("GHORG")
@@ -156,18 +162,6 @@ func main() {
 		default:
 			log.Println("Unexpected Github event:", event)
 		}
-	})
-
-	// we can remove this soon.
-	http.HandleFunc(ciwebhookpath, func(w http.ResponseWriter, r *http.Request) {
-		log.Println("CircleCI buildhook received.")
-		bi, err := parseBuildInfo(r)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		log.Printf("Build Info: %+v\n", bi)
 	})
 
 	log.Printf("Starting TinyHCI server for %s/%s\n", ghorg, ghrepo)
@@ -311,7 +305,7 @@ func handlePreviouslyQueuedBuilds(buildsCh chan *Build) {
 
 	for _, cib := range cibuilds {
 		// any in_progress checkruns for this build? restart them
-		runs, err := findCheckRuns(cib.VcsRevision, "in_progress")
+		runs, err := findCheckRuns(cib.Vcs.Revision, "in_progress")
 		if err != nil {
 			log.Println(err)
 			return
@@ -324,7 +318,7 @@ func handlePreviouslyQueuedBuilds(buildsCh chan *Build) {
 
 	for _, cib := range cibuilds {
 		// any queued checkruns for this build?
-		runs, err := findCheckRuns(cib.VcsRevision, "queued")
+		runs, err := findCheckRuns(cib.Vcs.Revision, "queued")
 		if err != nil {
 			log.Println(err)
 			return
