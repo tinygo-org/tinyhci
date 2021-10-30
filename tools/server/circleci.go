@@ -119,7 +119,7 @@ func getCIBuildNumFromSHA(sha string) (int, error) {
 		return -1, nil
 	}
 
-	wfr, err := getWorkflowRuns(time.Now().Add(-time.Hour * 12))
+	wfr, err := getWorkflowRuns(time.Now().UTC().Add(-time.Hour * 12))
 	if err != nil {
 		return -1, err
 	}
@@ -205,7 +205,7 @@ func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (int, error)
 func getRecentSuccessfulCIBuilds() ([]Pipeline, error) {
 	pls := make([]Pipeline, 0)
 
-	wfr, err := getWorkflowRuns(time.Now().Add(-time.Hour * 12))
+	wfr, err := getWorkflowRuns(time.Now().UTC().Add(-time.Hour * 12))
 	if err != nil {
 		return pls, err
 	}
@@ -325,4 +325,3 @@ func callCircleCIAPI(url string) ([]byte, error) {
 	defer res.Body.Close()
 	return ioutil.ReadAll(res.Body)
 }
-
