@@ -316,11 +316,17 @@ func getPipeline(id string) (Pipeline, error) {
 }
 
 func callCircleCIAPI(url string) ([]byte, error) {
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	req.Header.Add("Circle-Token", citoken)
 
-	res, _ := http.DefaultClient.Do(req)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
 
 	defer res.Body.Close()
 	return ioutil.ReadAll(res.Body)
