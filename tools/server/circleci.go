@@ -119,41 +119,41 @@ func getCIBuildNumFromSHA(sha string) (int, error) {
 		return -1, nil
 	}
 
-	wfr, err := getWorkflowRuns(time.Now().Add(-time.Hour * 72))
+	wfr, err := getWorkflowRuns(time.Now().Add(-time.Hour * 12))
 	if err != nil {
 		return -1, err
 	}
 
 	for _, v := range wfr.Items {
-		if v.Status == "success" {
-			wf, err := getWorkflow(v.ID)
-			if err != nil {
-				return -1, err
-			}
+		if v.Status != "success" {
+			continue
+		}
 
-			if wf.Name != "build-linux" && wf.Status != "success" {
+		wf, err := getWorkflow(v.ID)
+		if err != nil {
+			return -1, err
+		}
+
+		pl, err := getPipeline(wf.PipelineID)
+		if err != nil {
+			return -1, err
+		}
+
+		if pl.Vcs.Revision != sha {
+			continue
+		}
+
+		jobs, err := getWorkflowJobs(wf.ID)
+		if err != nil {
+			return -1, err
+		}
+
+		for _, job := range jobs.Items {
+			if !(job.Name == "build-linux" && job.Status == "success") {
 				continue
 			}
 
-			pl, err := getPipeline(wf.PipelineID)
-			if err != nil {
-				return -1, err
-			}
-
-			if pl.Vcs.Revision == sha {
-				jobs, err := getWorkflowJobs(wf.ID)
-				if err != nil {
-					return -1, err
-				}
-
-				for _, job := range jobs.Items {
-					if job.Name != "build-linux" && job.Status != "success" {
-						continue
-					}
-
-					return job.JobNumber, nil
-				}
-			}
+			return job.JobNumber, nil
 		}
 	}
 
@@ -177,10 +177,6 @@ func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (int, error)
 				return -1, err
 			}
 
-			if wf.Name != "build-linux" && wf.Status != "success" {
-				continue
-			}
-
 			pl, err := getPipeline(wf.PipelineID)
 			if err != nil {
 				return -1, err
@@ -193,7 +189,7 @@ func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (int, error)
 				}
 
 				for _, job := range jobs.Items {
-					if job.Name != "build-linux" && job.Status != "success" {
+					if !(job.Name == "build-linux" && job.Status == "success") {
 						continue
 					}
 
@@ -203,33 +199,40 @@ func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (int, error)
 		}
 	}
 
-	return -1, fmt.Errorf("cannot find TinyGo build for %s", sha)
+	return -1, fmt.Errorf("cannot find recent TinyGo build for %s", sha)
 }
 
 func getRecentSuccessfulCIBuilds() ([]Pipeline, error) {
 	pls := make([]Pipeline, 0)
 
-	wfr, err := getWorkflowRuns(time.Now().Add(-time.Hour))
+	wfr, err := getWorkflowRuns(time.Now().Add(-time.Hour * 12))
 	if err != nil {
 		return pls, err
 	}
 
 	for _, v := range wfr.Items {
 		if v.Status == "success" {
-			wf, err := getWorkflow(v.ID)
+			jobs, err := getWorkflowJobs(v.ID)
 			if err != nil {
 				return pls, err
 			}
 
-			if wf.Name != "build-linux" && wf.Status != "success" {
-				continue
-			}
+			for _, j := range jobs.Items {
+				if !(j.Name == "build-linux" && j.Status == "success") {
+					continue
+				}
 
-			pl, err := getPipeline(wf.PipelineID)
-			if err != nil {
-				return pls, err
+				wf, err := getWorkflow(v.ID)
+				if err != nil {
+					return pls, err
+				}
+
+				pl, err := getPipeline(wf.PipelineID)
+				if err != nil {
+					return pls, err
+				}
+				pls = append(pls, pl)
 			}
-			pls = append(pls, pl)
 		}
 	}
 
@@ -239,6 +242,22 @@ func getRecentSuccessfulCIBuilds() ([]Pipeline, error) {
 func getWorkflowRuns(start time.Time) (WorkflowRuns, error) {
 	var runs WorkflowRuns
 	url := URL + "/insights" + PROJECT_SLUG + "workflows/test-all?all-branches=true&start-date=" + start.Format(time.RFC3339)
+	fmt.Println("getWorkflowRuns: ", url)
+	body, err := callCircleCIAPI(url)
+	if err != nil {
+		return runs, err
+	}
+
+	json.Unmarshal([]byte(body), &runs)
+	return runs, nil
+}
+
+func getWorkflowRunsBranch(branch string, start time.Time) (WorkflowRuns, error) {
+	var runs WorkflowRuns
+	url := URL + "/insights" + PROJECT_SLUG + "workflows/test-all?all-branches=false&" +
+		"&branch=" + branch +
+		"&start-date=" + start.Format(time.RFC3339)
+
 	body, err := callCircleCIAPI(url)
 	if err != nil {
 		return runs, err
@@ -306,3 +325,4 @@ func callCircleCIAPI(url string) ([]byte, error) {
 	defer res.Body.Close()
 	return ioutil.ReadAll(res.Body)
 }
+
