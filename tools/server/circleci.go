@@ -119,7 +119,7 @@ func getCIBuildNumFromSHA(sha string) (int, error) {
 		return -1, nil
 	}
 
-	wfr, err := getWorkflowRuns(time.Now().UTC().Add(-time.Hour * 12))
+	wfr, err := getWorkflowRuns(time.Now().UTC().Add(-time.Hour * 72))
 	if err != nil {
 		return -1, err
 	}
