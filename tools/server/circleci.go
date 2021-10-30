@@ -205,7 +205,7 @@ func getMostRecentCIBuildNumAfterStart(sha string, start time.Time) (int, error)
 func getRecentSuccessfulCIBuilds() ([]Pipeline, error) {
 	pls := make([]Pipeline, 0)
 
-	wfr, err := getWorkflowRuns(time.Now().UTC().Add(-time.Hour * 12))
+	wfr, err := getWorkflowRuns(time.Now().UTC().Add(-time.Hour * 72))
 	if err != nil {
 		return pls, err
 	}
