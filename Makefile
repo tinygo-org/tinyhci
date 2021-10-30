@@ -1,7 +1,7 @@
-TARGET_GOVERSION := go1.15
+TARGET_GOVERSION := go1.17
 GOINSTALLED := $(shell command -v go 2> /dev/null)
 CURRENT_GOVERSION  := $(shell go version | awk '{print $$3}')
-TARGET_TINYGOVERSION := 0.16.0
+TARGET_TINYGOVERSION := 0.20.0
 TINYGOINSTALLED := $(shell command -v tinygo 2> /dev/null)
 CURRENT_TINYGOVERSION  := $(shell tinygo version | awk '{print $$3}')
 NOCOLOR := \033[0m
