@@ -18,7 +18,7 @@ package main
 // 	Arduino A5 <--> MPU-6050 SCL
 // 	Arduino A4 <--> MPU-6050 SDA
 // 	Arduino G <--> MPU-6050 GND
-// 	Arduino D7 <--> MPU-6050 VCC
+// 	Arduino D8 <--> MPU-6050 VCC
 //
 import (
 	"machine"
@@ -43,7 +43,7 @@ var (
 
 	// used by i2c tests
 	accel    *mpu6050.Device
-	powerpin = machine.D7
+	powerpin = machine.D8
 )
 
 const (
