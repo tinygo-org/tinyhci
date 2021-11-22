@@ -10,12 +10,12 @@ import (
 
 	"net/http"
 
-	"github.com/google/go-github/v31/github"
+	"github.com/google/go-github/v40/github"
 )
 
 const (
 	useCurrentBinaryRelease = false // set to true to use the already installed tinygo
-	officialRelease         = "https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz"
+	officialRelease         = "https://github.com/tinygo-org/tinygo/releases/download/v0.21.0/tinygo0.21.0.linux-amd64.tar.gz"
 )
 
 var (
@@ -99,12 +99,13 @@ func main() {
 	builds = make(map[string]*Build)
 	buildsCh := make(chan *Build)
 
+	// start go routine to actually do the building
 	go processBuilds(buildsCh)
 
+	// fetch any builds that are already in progress
 	handlePreviouslyQueuedBuilds(buildsCh)
 
-	go pollPendingBuilds(buildsCh)
-
+	// start the webhook server
 	http.HandleFunc(ghwebhookpath, func(w http.ResponseWriter, r *http.Request) {
 		payload, err := github.ValidatePayload(r, []byte(ghkey))
 		if err != nil {
@@ -141,16 +142,32 @@ func main() {
 			}
 
 		case *github.CheckRunEvent:
-			log.Printf("Github checkrun event %s %s for %d %s %s %s\n",
+			log.Printf("Github checkrun event %s %s for %d %s %s %s %s %s\n",
 				event.CheckRun.GetStatus(),
 				event.CheckRun.GetConclusion(),
 				event.CheckRun.GetID(),
 				event.CheckRun.GetName(),
 				event.GetAction(),
-				event.CheckRun.GetHeadSHA())
+				event.CheckRun.GetHeadSHA(),
+				event.CheckRun.GetExternalID(),
+				event.CheckRun.GetDetailsURL())
 
 			switch event.CheckRun.GetStatus() {
 			case "completed":
+				if event.CheckRun.GetName() == "build-linux" {
+					url, err := getTinygoBinaryURLFromGH(event.CheckRun.GetID())
+					if err != nil {
+						log.Println(err)
+						return
+					}
+
+					// TODO: make sure already in builds
+					b := builds[event.CheckRun.GetHeadSHA()]
+					b.binaryURL = url
+					b.pendingCI = false
+					buildsCh <- b
+				}
+
 				if event.GetAction() == "rerequested" {
 					performCheckRun(event.CheckRun, buildsCh)
 				}
@@ -226,53 +243,9 @@ func buildDocker(url, sha string) error {
 	return nil
 }
 
-// pollPendingBuilds is run as a go routine to poll the
-// circleci server, and look for new builds of the TinyGo
-// binary that match tinyhci builds in need of processing.
-func pollPendingBuilds(buildsCh chan *Build) {
-	for {
-		if len(builds) == 0 {
-			log.Println("No builds to poll for.")
-		} else {
-			log.Println("Polling for builds...")
-		}
-
-		for _, b := range builds {
-			if b.pendingCI {
-				// look to see if there is a CI build with binary for this build
-				bn, err := getMostRecentCIBuildNumAfterStart(b.sha, b.started)
-				if err != nil {
-					continue
-				}
-				log.Println("Binary ready for", b.sha)
-
-				url, err := getTinygoBinaryURL(bn)
-				if err != nil {
-					log.Println(err)
-					continue
-				}
-
-				b.binaryURL = url
-				b.pendingCI = false
-
-				buildsCh <- b
-			}
-		}
-
-		// sleep in-between waiting for new builds
-		time.Sleep(pollFrequency)
-	}
-}
-
 func performCheckRun(cr *github.CheckRun, buildsCh chan *Build) {
 	// do the retest here
-	bn, err := getCIBuildNumFromSHA(cr.GetHeadSHA())
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	url, err := getTinygoBinaryURL(bn)
+	url, err := getTinygoBinaryURLFromGH(cr.GetID())
 	if err != nil {
 		log.Println(err)
 		return
@@ -297,7 +270,7 @@ func performCheckRun(cr *github.CheckRun, buildsCh chan *Build) {
 // already queued before the server was started, probably due
 // to some error or failure.
 func handlePreviouslyQueuedBuilds(buildsCh chan *Build) {
-	cibuilds, err := getRecentSuccessfulCIBuilds()
+	cibuilds, err := getRecentSuccessfulGHBuilds()
 	if err != nil {
 		log.Println(err)
 		return
@@ -305,7 +278,7 @@ func handlePreviouslyQueuedBuilds(buildsCh chan *Build) {
 
 	for _, cib := range cibuilds {
 		// any in_progress checkruns for this build? restart them
-		runs, err := findCheckRuns(cib.Vcs.Revision, "in_progress")
+		runs, err := findCheckRuns(cib, "in_progress")
 		if err != nil {
 			log.Println(err)
 			return
@@ -318,7 +291,7 @@ func handlePreviouslyQueuedBuilds(buildsCh chan *Build) {
 
 	for _, cib := range cibuilds {
 		// any queued checkruns for this build?
-		runs, err := findCheckRuns(cib.Vcs.Revision, "queued")
+		runs, err := findCheckRuns(cib, "queued")
 		if err != nil {
 			log.Println(err)
 			return

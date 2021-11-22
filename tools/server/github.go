@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/bradleyfalzon/ghinstallation"
-	"github.com/google/go-github/v31/github"
+	"github.com/google/go-github/v40/github"
 )
 
 func authenticateGithubClient(appid, installid int64, privatekeyfile string) (*github.Client, error) {
@@ -189,4 +189,45 @@ func parseTarget(name string) (string, error) {
 		return "", errors.New("invalid check run name")
 	}
 	return res[1], nil
+}
+
+func getTinygoBinaryURLFromGH(runID int64) (string, error) {
+	if useCurrentBinaryRelease {
+		return "using current TinyGo binary release", nil
+	}
+
+	// get list of artifacts. it will be first/only one
+	opts := github.ListOptions{}
+	artifacts, _, err := client.Actions.ListWorkflowRunArtifacts(context.Background(), ghorg, ghrepo, runID, &opts)
+	if err != nil {
+		return "", err
+	}
+
+	if artifacts.GetTotalCount() == 0 {
+		return "", errors.New("no artifacts found")
+	}
+
+	// get artifact
+	artifact := artifacts.Artifacts[0]
+	return artifact.GetArchiveDownloadURL(), nil
+}
+
+func getRecentSuccessfulGHBuilds() ([]string, error) {
+	builds := make([]string, 0)
+
+	opts := github.ListWorkflowRunsOptions{Status: "success"}
+	runs, _, err := client.Actions.ListRepositoryWorkflowRuns(context.Background(), ghorg, ghrepo, &opts)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, run := range runs.WorkflowRuns {
+		if !strings.Contains(run.GetHeadBranch(), "build-linux") {
+			continue
+		}
+
+		builds = append(builds, run.GetHeadSHA())
+	}
+
+	return builds, nil
 }

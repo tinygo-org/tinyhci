@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/google/go-github/v31/github"
+	"github.com/google/go-github/v40/github"
 )
 
 // Build is a specific build to be tested.
