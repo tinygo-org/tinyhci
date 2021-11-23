@@ -191,7 +191,7 @@ func parseTarget(name string) (string, error) {
 	return res[1], nil
 }
 
-func getTinygoBinaryURLFromGH(runID int64) (string, error) {
+func getTinygoBinaryURLFromGH(suiteID, runID int64) (string, error) {
 	if useCurrentBinaryRelease {
 		return "using current TinyGo binary release", nil
 	}
@@ -209,7 +209,9 @@ func getTinygoBinaryURLFromGH(runID int64) (string, error) {
 
 	// get artifact
 	artifact := artifacts.Artifacts[0]
-	return artifact.GetArchiveDownloadURL(), nil
+	url := fmt.Sprintf("https://github.com/%s/%s/suites/%d/artifacts/%d", ghorg, ghrepo, suiteID, artifact.GetID())
+	//return artifact.GetArchiveDownloadURL(), nil
+	return url, nil
 }
 
 func getRecentSuccessfulWorkflowRuns() ([]*github.WorkflowRun, error) {
