@@ -169,7 +169,7 @@ func main() {
 				}
 
 				if event.GetAction() == "rerequested" {
-					performCheckRun(event.CheckRun, buildsCh)
+					performCheckRun(event.CheckRun, event.CheckRun.GetID(), buildsCh)
 				}
 			case "queued":
 				// received when a new commit is pushed
@@ -243,9 +243,9 @@ func buildDocker(url, sha string) error {
 	return nil
 }
 
-func performCheckRun(cr *github.CheckRun, buildsCh chan *Build) {
+func performCheckRun(cr *github.CheckRun, runID int64, buildsCh chan *Build) {
 	// do the retest here
-	url, err := getTinygoBinaryURLFromGH(cr.GetID())
+	url, err := getTinygoBinaryURLFromGH(runID)
 	if err != nil {
 		log.Println(err)
 		return
@@ -270,7 +270,7 @@ func performCheckRun(cr *github.CheckRun, buildsCh chan *Build) {
 // already queued before the server was started, probably due
 // to some error or failure.
 func handlePreviouslyQueuedBuilds(buildsCh chan *Build) {
-	cibuilds, err := getRecentSuccessfulGHBuilds()
+	cibuilds, err := getRecentSuccessfulWorkflowRuns()
 	if err != nil {
 		log.Println(err)
 		return
@@ -278,27 +278,27 @@ func handlePreviouslyQueuedBuilds(buildsCh chan *Build) {
 
 	for _, cib := range cibuilds {
 		// any in_progress checkruns for this build? restart them
-		runs, err := findCheckRuns(cib, "in_progress")
+		runs, err := findCheckRuns(cib.GetHeadSHA(), "in_progress")
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
 		for _, run := range runs {
-			performCheckRun(run, buildsCh)
+			performCheckRun(run, cib.GetID(), buildsCh)
 		}
 	}
 
 	for _, cib := range cibuilds {
 		// any queued checkruns for this build?
-		runs, err := findCheckRuns(cib, "queued")
+		runs, err := findCheckRuns(cib.GetHeadSHA(), "queued")
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
 		for _, run := range runs {
-			performCheckRun(run, buildsCh)
+			performCheckRun(run, cib.GetID(), buildsCh)
 		}
 	}
 }

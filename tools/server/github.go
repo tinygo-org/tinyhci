@@ -212,8 +212,8 @@ func getTinygoBinaryURLFromGH(runID int64) (string, error) {
 	return artifact.GetArchiveDownloadURL(), nil
 }
 
-func getRecentSuccessfulGHBuilds() ([]string, error) {
-	builds := make([]string, 0)
+func getRecentSuccessfulWorkflowRuns() ([]*github.WorkflowRun, error) {
+	builds := make([]*github.WorkflowRun, 0)
 
 	opts := github.ListWorkflowRunsOptions{Status: "success"}
 	runs, _, err := client.Actions.ListRepositoryWorkflowRuns(context.Background(), ghorg, ghrepo, &opts)
@@ -222,11 +222,24 @@ func getRecentSuccessfulGHBuilds() ([]string, error) {
 	}
 
 	for _, run := range runs.WorkflowRuns {
-		if !strings.Contains(run.GetHeadBranch(), "build-linux") {
+		log.Println(run.GetName())
+		if run.GetName() != "Linux" {
 			continue
 		}
 
-		builds = append(builds, run.GetHeadSHA())
+		opts := github.ListWorkflowJobsOptions{}
+		jobs, _, err := client.Actions.ListWorkflowJobs(context.Background(), ghorg, ghrepo, run.GetID(), &opts)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, job := range jobs.Jobs {
+			log.Println(job.GetName(), job.GetHeadSHA())
+			if job.GetName() == "build-linux" {
+				builds = append(builds, run)
+				continue
+			}
+		}
 	}
 
 	return builds, nil
