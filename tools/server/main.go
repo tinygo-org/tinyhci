@@ -155,7 +155,7 @@ func main() {
 			switch event.CheckRun.GetStatus() {
 			case "completed":
 				if event.CheckRun.GetName() == "build-linux" {
-					url, err := getTinygoBinaryURLFromGH(event.CheckRun.GetCheckSuite().GetID(), event.CheckRun.GetID())
+					url, err := getTinygoBinaryURLFromGH(event.CheckRun.GetID())
 					if err != nil {
 						log.Println(err)
 						return
@@ -245,7 +245,7 @@ func buildDocker(url, sha string) error {
 
 func performCheckRun(cr *github.CheckRun, runID int64, buildsCh chan *Build) {
 	// do the retest here
-	url, err := getTinygoBinaryURLFromGH(cr.GetCheckSuite().GetID(), runID)
+	url, err := getTinygoBinaryURLFromGH(runID)
 	if err != nil {
 		log.Println(err)
 		return
