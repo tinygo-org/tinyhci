@@ -226,7 +226,6 @@ func getRecentSuccessfulWorkflowRuns() ([]*github.WorkflowRun, error) {
 	}
 
 	for _, run := range runs.WorkflowRuns {
-		log.Println(run.GetName())
 		if run.GetName() != "Linux" {
 			continue
 		}
@@ -238,7 +237,6 @@ func getRecentSuccessfulWorkflowRuns() ([]*github.WorkflowRun, error) {
 		}
 
 		for _, job := range jobs.Jobs {
-			log.Println(job.GetName(), job.GetHeadSHA())
 			if job.GetName() == "build-linux" {
 				builds = append(builds, run)
 				continue
@@ -257,7 +255,6 @@ func getRecentSuccessfulWorkflowRunForSHA(sha string) (*github.WorkflowRun, erro
 	}
 
 	for _, run := range runs.WorkflowRuns {
-		log.Println(run.GetName())
 		if run.GetName() != "Linux" {
 			continue
 		}
@@ -269,7 +266,6 @@ func getRecentSuccessfulWorkflowRunForSHA(sha string) (*github.WorkflowRun, erro
 		}
 
 		for _, job := range jobs.Jobs {
-			log.Println(job.GetName(), job.GetHeadSHA())
 			if job.GetName() == "build-linux" && job.GetHeadSHA() == sha {
 				return run, nil
 			}

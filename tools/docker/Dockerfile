@@ -20,9 +20,7 @@ FROM tinygohci-base AS tinygohci-build
 ENV TINYGO_RELEASE=0.21.0
 ARG TINYGO_DOWNLOAD_SHA=1234
 
-COPY versions/${TINYGO_DOWNLOAD_SHA}.tar.gz tinygo.linux-amd64.tar.gz
-RUN tar -xzf tinygo.linux-amd64.tar.gz -C /usr/local && \
-    rm tinygo.linux-amd64.tar.gz
+ADD tools/docker/versions/${TINYGO_DOWNLOAD_SHA}.tar.gz /usr/local
 ENV PATH=${PATH}:/usr/local/tinygo/bin
 RUN go get -d tinygo.org/x/drivers
 

@@ -264,17 +264,18 @@ func downloadBinary(url, sha string) error {
 	if !fileExists("tools/docker/versions/" + sha + ".tar.gz") {
 		log.Println("Downloading binary for", sha)
 
-		_, err := grab.Get("tinygo-latest.zip", url)
+		resp, err := grab.Get("tinygo-latest.zip", url)
 		if err != nil {
 			return err
 		}
-
+		log.Println("downloaded bytes:", resp.BytesComplete())
 		// unzip
-		_, err = exec.Command("unzip", "tinygo-latest.zip",
+		out, err := exec.Command("unzip", "tinygo-latest.zip",
 			"tinygo.linux-amd64.tar.gz").CombinedOutput()
 		if err != nil {
 			return err
 		}
+		log.Println(out)
 
 		// move file
 		err = os.Rename("tinygo.linux-amd64.tar.gz", "tools/docker/versions/"+sha+".tar.gz")
