@@ -10,6 +10,7 @@ import (
 
 	"net/http"
 
+	"github.com/cavaliercoder/grab"
 	"github.com/google/go-github/v40/github"
 )
 
@@ -207,7 +208,14 @@ func processBuilds(builds chan *Build) {
 			}
 
 			log.Printf("Building docker image using TinyGo from %s\n", url)
-			err := buildDocker(url, build.sha)
+			err := downloadBinary(url, build.sha)
+			if err != nil {
+				log.Println(err)
+				build.failCheckSuite("binary download failed")
+				continue
+			}
+
+			err = buildDocker(build.sha)
 			if err != nil {
 				log.Println(err)
 				build.failCheckSuite("docker build failed")
@@ -233,8 +241,8 @@ func processBuilds(builds chan *Build) {
 
 // buildDocker does the docker build for the binary download
 // with this SHA.
-func buildDocker(url, sha string) error {
-	buildarg := fmt.Sprintf("TINYGO_DOWNLOAD_URL=%s", url)
+func buildDocker(sha string) error {
+	buildarg := fmt.Sprintf("TINYGO_DOWNLOAD_SHA=%s", sha)
 	buildtag := "tinygohci:" + sha[:7]
 	out, err := exec.Command("docker", "build",
 		"-t", buildtag,
@@ -247,6 +255,49 @@ func buildDocker(url, sha string) error {
 	}
 
 	return nil
+}
+
+// downloadBinary does the download for the binary build
+// with this SHA.
+func downloadBinary(url, sha string) error {
+	// check if the file is already downloaded for this sha
+	if !fileExists("tools/docker/versions/" + sha + ".tar.gz") {
+		log.Println("Downloading binary for", sha)
+
+		_, err := grab.Get("tinygo-latest.zip", url)
+		if err != nil {
+			return err
+		}
+
+		// unzip
+		_, err = exec.Command("unzip", "tinygo-latest.zip",
+			"tinygo.linux-amd64.tar.gz").CombinedOutput()
+		if err != nil {
+			return err
+		}
+
+		// move file
+		err = os.Rename("tinygo.linux-amd64.tar.gz", "tools/docker/versions/"+sha+".tar.gz")
+		if err != nil {
+			return err
+		}
+
+		err = os.Remove("tinygo-latest.zip")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// fileExists checks if a file exists and is not a directory before we
+// try using it to prevent further errors.
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
 
 func performCheckRun(cr *github.CheckRun, runID int64, buildsCh chan *Build) {

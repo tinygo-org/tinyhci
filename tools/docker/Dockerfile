@@ -17,12 +17,12 @@ RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
 ENV PATH=${PATH}:/usr/local/go/bin
 
 FROM tinygohci-base AS tinygohci-build
-ENV TINYGO_RELEASE=0.19.0
-ARG TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_RELEASE}/tinygo${TINYGO_RELEASE}.linux-amd64.tar.gz
-RUN wget ${TINYGO_DOWNLOAD_URL} -O tinygo.zip && \
-    unzip tinygo.zip tinygo.linux-amd64.tar.gz && \
-    tar -xzf tinygo.linux-amd64.tar.gz -C /usr/local && \
-    rm tinygo.zip tinygo.linux-amd64.tar.gz
+ENV TINYGO_RELEASE=0.21.0
+ARG TINYGO_DOWNLOAD_SHA=1234
+
+COPY versions/${TINYGO_DOWNLOAD_SHA}.tar.gz tinygo.linux-amd64.tar.gz
+RUN tar -xzf tinygo.linux-amd64.tar.gz -C /usr/local && \
+    rm tinygo.linux-amd64.tar.gz
 ENV PATH=${PATH}:/usr/local/tinygo/bin
 RUN go get -d tinygo.org/x/drivers
 

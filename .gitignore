@@ -1,2 +1,3 @@
 build
 keys/*.pem
+tools/docker/versions/*.tar.gz
