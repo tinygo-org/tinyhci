@@ -248,3 +248,33 @@ func getRecentSuccessfulWorkflowRuns() ([]*github.WorkflowRun, error) {
 
 	return builds, nil
 }
+
+func getRecentSuccessfulWorkflowRunForSHA(sha string) (*github.WorkflowRun, error) {
+	opts := github.ListWorkflowRunsOptions{Status: "success"}
+	runs, _, err := client.Actions.ListRepositoryWorkflowRuns(context.Background(), ghorg, ghrepo, &opts)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, run := range runs.WorkflowRuns {
+		log.Println(run.GetName())
+		if run.GetName() != "Linux" {
+			continue
+		}
+
+		opts := github.ListWorkflowJobsOptions{}
+		jobs, _, err := client.Actions.ListWorkflowJobs(context.Background(), ghorg, ghrepo, run.GetID(), &opts)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, job := range jobs.Jobs {
+			log.Println(job.GetName(), job.GetHeadSHA())
+			if job.GetName() == "build-linux" && job.GetHeadSHA() == sha {
+				return run, nil
+			}
+		}
+	}
+
+	return nil, errors.New("no successful workflow found for sha " + sha)
+}

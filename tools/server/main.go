@@ -169,7 +169,13 @@ func main() {
 				}
 
 				if event.GetAction() == "rerequested" {
-					performCheckRun(event.CheckRun, event.CheckRun.GetID(), buildsCh)
+					wr, err := getRecentSuccessfulWorkflowRunForSHA(event.CheckRun.GetHeadSHA())
+					if err != nil {
+						log.Println(err)
+						return
+					}
+
+					performCheckRun(event.CheckRun, wr.GetID(), buildsCh)
 				}
 			case "queued":
 				// received when a new commit is pushed
