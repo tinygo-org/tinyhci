@@ -155,8 +155,15 @@ func main() {
 
 			switch event.CheckRun.GetStatus() {
 			case "completed":
-				if event.CheckRun.GetName() == "build-linux" {
-					url, err := getTinygoBinaryURLFromGH(event.CheckRun.GetID())
+				switch {
+				case event.CheckRun.GetName() == "build-linux":
+					wr, err := getRecentSuccessfulWorkflowRunForSHA(event.CheckRun.GetHeadSHA())
+					if err != nil {
+						log.Println(err)
+						return
+					}
+
+					url, err := getTinygoBinaryURLFromGH(wr.GetID())
 					if err != nil {
 						log.Println(err)
 						return
@@ -167,9 +174,8 @@ func main() {
 					b.binaryURL = url
 					b.pendingCI = false
 					buildsCh <- b
-				}
 
-				if event.GetAction() == "rerequested" {
+				case event.GetAction() == "rerequested":
 					wr, err := getRecentSuccessfulWorkflowRunForSHA(event.CheckRun.GetHeadSHA())
 					if err != nil {
 						log.Println(err)
@@ -275,7 +281,7 @@ func downloadBinary(url, sha string) error {
 		if err != nil {
 			return err
 		}
-		log.Println(out)
+		log.Println(string(out))
 
 		// move file
 		err = os.Rename("tinygo.linux-amd64.tar.gz", "tools/docker/versions/"+sha+".tar.gz")
