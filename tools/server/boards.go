@@ -73,7 +73,7 @@ var (
 			port:        "maixbit00",
 			baud:        115200,
 			resetpause:  2 * time.Second,
-			enabled:     true,
+			enabled:     false,
 		},
 		&Board{
 			target:      "itsybitsy-nrf52840",
