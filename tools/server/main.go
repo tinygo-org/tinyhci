@@ -104,7 +104,7 @@ func main() {
 	go processBuilds(buildsCh)
 
 	// fetch any builds that are already in progress
-	handlePreviouslyQueuedBuilds(buildsCh)
+	go handlePreviouslyQueuedBuilds(buildsCh)
 
 	// start the webhook server
 	http.HandleFunc(ghwebhookpath, func(w http.ResponseWriter, r *http.Request) {
