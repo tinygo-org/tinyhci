@@ -157,7 +157,7 @@ func main() {
 			case "completed":
 				switch {
 				case event.CheckRun.GetName() == "build-linux":
-					wr, err := getRecentSuccessfulWorkflowRunForSHA(event.CheckRun.GetHeadSHA())
+					wr, err := getRecentWorkflowRunForSHA("in_progress", event.CheckRun.GetHeadSHA())
 					if err != nil {
 						log.Println(err)
 						return
@@ -176,7 +176,7 @@ func main() {
 					buildsCh <- b
 
 				case event.GetAction() == "rerequested":
-					wr, err := getRecentSuccessfulWorkflowRunForSHA(event.CheckRun.GetHeadSHA())
+					wr, err := getRecentWorkflowRunForSHA("success", event.CheckRun.GetHeadSHA())
 					if err != nil {
 						log.Println(err)
 						return

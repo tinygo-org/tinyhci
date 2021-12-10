@@ -247,8 +247,8 @@ func getRecentSuccessfulWorkflowRuns() ([]*github.WorkflowRun, error) {
 	return builds, nil
 }
 
-func getRecentSuccessfulWorkflowRunForSHA(sha string) (*github.WorkflowRun, error) {
-	opts := github.ListWorkflowRunsOptions{Status: "success"}
+func getRecentWorkflowRunForSHA(status, sha string) (*github.WorkflowRun, error) {
+	opts := github.ListWorkflowRunsOptions{Status: status}
 	runs, _, err := client.Actions.ListRepositoryWorkflowRuns(context.Background(), ghorg, ghrepo, &opts)
 	if err != nil {
 		return nil, err
