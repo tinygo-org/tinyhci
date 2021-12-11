@@ -122,6 +122,34 @@ func main() {
 		case *github.PushEvent:
 			// ignore pushes because we only care about checks API
 			return
+		case *github.WorkflowRunEvent:
+			log.Printf("Github workflowrun on '%s' event %s %s for %d %s\n",
+				event.WorkflowRun.GetName(),
+				event.WorkflowRun.GetStatus(),
+				event.WorkflowRun.GetConclusion(),
+				event.WorkflowRun.GetID(),
+				event.WorkflowRun.GetHeadSHA())
+
+			if !(event.WorkflowRun.GetStatus() == "build-linux" &&
+				event.WorkflowRun.GetStatus() == "completed") {
+				return
+			}
+
+			url, err := getTinygoBinaryURLFromGH(event.WorkflowRun.GetID())
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			b, ok := builds[event.WorkflowRun.GetHeadSHA()]
+			if !ok {
+				b = NewBuild(event.WorkflowRun.GetHeadSHA())
+				builds[event.WorkflowRun.GetHeadSHA()] = b
+			}
+			b.binaryURL = url
+			b.pendingCI = false
+			buildsCh <- b
+
 		case *github.CheckSuiteEvent:
 			log.Printf("Github checksuite event %s %s for %d %s\n",
 				event.CheckSuite.GetStatus(),
@@ -156,24 +184,24 @@ func main() {
 			switch event.CheckRun.GetStatus() {
 			case "completed":
 				switch {
-				case event.CheckRun.GetName() == "build-linux":
-					wr, err := getRecentWorkflowRunForSHA("in_progress", event.CheckRun.GetHeadSHA())
-					if err != nil {
-						log.Println(err)
-						return
-					}
+				// case event.CheckRun.GetName() == "build-linux":
+				// 	wr, err := getRecentWorkflowRunForSHA("in_progress", event.CheckRun.GetHeadSHA())
+				// 	if err != nil {
+				// 		log.Println(err)
+				// 		return
+				// 	}
 
-					url, err := getTinygoBinaryURLFromGH(wr.GetID())
-					if err != nil {
-						log.Println(err)
-						return
-					}
+				// 	url, err := getTinygoBinaryURLFromGH(wr.GetID())
+				// 	if err != nil {
+				// 		log.Println(err)
+				// 		return
+				// 	}
 
-					// TODO: make sure already in builds
-					b := builds[event.CheckRun.GetHeadSHA()]
-					b.binaryURL = url
-					b.pendingCI = false
-					buildsCh <- b
+				// 	// TODO: make sure already in builds
+				// 	b := builds[event.CheckRun.GetHeadSHA()]
+				// 	b.binaryURL = url
+				// 	b.pendingCI = false
+				// 	buildsCh <- b
 
 				case event.GetAction() == "rerequested":
 					wr, err := getRecentWorkflowRunForSHA("success", event.CheckRun.GetHeadSHA())
