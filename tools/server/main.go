@@ -122,29 +122,29 @@ func main() {
 		case *github.PushEvent:
 			// ignore pushes because we only care about checks API
 			return
-		case *github.WorkflowRunEvent:
-			log.Printf("Github workflowrun on '%s' event %s %s for %d %s\n",
-				event.WorkflowRun.GetName(),
-				event.WorkflowRun.GetStatus(),
-				event.WorkflowRun.GetConclusion(),
-				event.WorkflowRun.GetID(),
-				event.WorkflowRun.GetHeadSHA())
+		case *github.WorkflowJobEvent:
+			log.Printf("Github workflowjob on '%s' event %s %s for %d %s\n",
+				event.WorkflowJob.GetName(),
+				event.WorkflowJob.GetStatus(),
+				event.WorkflowJob.GetConclusion(),
+				event.WorkflowJob.GetID(),
+				event.WorkflowJob.GetHeadSHA())
 
-			if !(event.WorkflowRun.GetStatus() == "build-linux" &&
-				event.WorkflowRun.GetStatus() == "completed") {
+			if !(event.WorkflowJob.GetStatus() == "build-linux" &&
+				event.WorkflowJob.GetStatus() == "completed") {
 				return
 			}
 
-			url, err := getTinygoBinaryURLFromGH(event.WorkflowRun.GetID())
+			url, err := getTinygoBinaryURLFromGH(event.WorkflowJob.GetRunID())
 			if err != nil {
 				log.Println(err)
 				return
 			}
 
-			b, ok := builds[event.WorkflowRun.GetHeadSHA()]
+			b, ok := builds[event.WorkflowJob.GetHeadSHA()]
 			if !ok {
-				b = NewBuild(event.WorkflowRun.GetHeadSHA())
-				builds[event.WorkflowRun.GetHeadSHA()] = b
+				b = NewBuild(event.WorkflowJob.GetHeadSHA())
+				builds[event.WorkflowJob.GetHeadSHA()] = b
 			}
 			b.binaryURL = url
 			b.pendingCI = false
