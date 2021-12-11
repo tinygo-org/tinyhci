@@ -130,7 +130,7 @@ func main() {
 				event.WorkflowJob.GetID(),
 				event.WorkflowJob.GetHeadSHA())
 
-			if !(event.WorkflowJob.GetStatus() == "build-linux" &&
+			if !(event.WorkflowJob.GetName() == "build-linux" &&
 				event.WorkflowJob.GetStatus() == "completed") {
 				return
 			}
@@ -183,27 +183,7 @@ func main() {
 
 			switch event.CheckRun.GetStatus() {
 			case "completed":
-				switch {
-				// case event.CheckRun.GetName() == "build-linux":
-				// 	wr, err := getRecentWorkflowRunForSHA("in_progress", event.CheckRun.GetHeadSHA())
-				// 	if err != nil {
-				// 		log.Println(err)
-				// 		return
-				// 	}
-
-				// 	url, err := getTinygoBinaryURLFromGH(wr.GetID())
-				// 	if err != nil {
-				// 		log.Println(err)
-				// 		return
-				// 	}
-
-				// 	// TODO: make sure already in builds
-				// 	b := builds[event.CheckRun.GetHeadSHA()]
-				// 	b.binaryURL = url
-				// 	b.pendingCI = false
-				// 	buildsCh <- b
-
-				case event.GetAction() == "rerequested":
+				if event.GetAction() == "rerequested" {
 					wr, err := getRecentWorkflowRunForSHA("success", event.CheckRun.GetHeadSHA())
 					if err != nil {
 						log.Println(err)
