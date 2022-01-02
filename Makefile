@@ -161,7 +161,7 @@ stop-ngrok-service:
 	sudo systemctl stop ngrok.service
 
 docker:
-	docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz .
+	DOCKER_BUILDKIT=1 docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz .
 
 install-udev-rules:
 	sudo cp tools/udev/99-named-devices.rules /etc/udev/rules.d/

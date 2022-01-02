@@ -89,7 +89,7 @@ We run each set of checks using a docker container with the associated `tinygo` 
 To build it:
 
 ```
-docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://13064-136505169-gh.circle-artifacts.com/0/tmp/tinygo.linux-amd64.tar.gz .
+DOCKER_BUILDKIT=1 docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://13064-136505169-gh.circle-artifacts.com/0/tmp/tinygo.linux-amd64.tar.gz .
 ```
 
 Now we can use the `tinygohci:latest` image to build/flash our program.

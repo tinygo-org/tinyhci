@@ -258,10 +258,14 @@ func processBuilds(builds chan *Build) {
 func buildDocker(sha string) error {
 	buildarg := fmt.Sprintf("TINYGO_DOWNLOAD_SHA=%s", sha)
 	buildtag := "tinygohci:" + sha[:7]
-	out, err := exec.Command("docker", "build",
+	cmd := exec.Command("docker", "build",
 		"-t", buildtag,
 		"-f", "tools/docker/Dockerfile",
-		"--build-arg", buildarg, ".").CombinedOutput()
+		"--build-arg", buildarg, ".")
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "DOCKER_BUILDKIT=1")
+
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Println(err)
 		log.Println(string(out))
