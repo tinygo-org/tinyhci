@@ -192,6 +192,24 @@ func main() {
 
 					performCheckRun(event.CheckRun, wr.GetID(), buildsCh)
 				}
+				if event.CheckRun.GetConclusion() == "success" &&
+					event.CheckRun.GetName() == "build-linux" {
+					url, err := getTinygoBinaryURLFromGH(event.CheckRun.GetID())
+					if err != nil {
+						log.Println(err)
+						return
+					}
+
+					b, ok := builds[event.CheckRun.GetHeadSHA()]
+					if !ok {
+						b = NewBuild(event.CheckRun.GetHeadSHA())
+						builds[event.CheckRun.GetHeadSHA()] = b
+					}
+					b.binaryURL = url
+					b.pendingCI = false
+					buildsCh <- b
+
+				}
 			case "queued":
 				// received when a new commit is pushed
 			default:
