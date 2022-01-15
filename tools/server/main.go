@@ -130,6 +130,25 @@ func main() {
 				event.WorkflowRun.GetID(),
 				event.WorkflowRun.GetHeadSHA())
 
+			if event.WorkflowRun.GetStatus() == "completed" &&
+				event.WorkflowRun.GetConclusion() == "success" &&
+				event.WorkflowRun.GetName() == "Linux" {
+				url, err := getTinygoBinaryURLFromGH(event.WorkflowRun.GetID())
+				if err != nil {
+					log.Println(err)
+					return
+				}
+
+				b, ok := builds[event.WorkflowRun.GetHeadSHA()]
+				if !ok {
+					b = NewBuild(event.WorkflowRun.GetHeadSHA())
+					builds[event.WorkflowRun.GetHeadSHA()] = b
+				}
+				b.binaryURL = url
+				b.pendingCI = false
+				buildsCh <- b
+			}
+
 		case *github.WorkflowJobEvent:
 			log.Printf("Github workflowjob on '%s' event %s %s for %d %s\n",
 				event.WorkflowJob.GetName(),
@@ -137,26 +156,6 @@ func main() {
 				event.WorkflowJob.GetConclusion(),
 				event.WorkflowJob.GetID(),
 				event.WorkflowJob.GetHeadSHA())
-
-			if !(event.WorkflowJob.GetName() == "build-linux" &&
-				event.WorkflowJob.GetStatus() == "completed") {
-				return
-			}
-
-			url, err := getTinygoBinaryURLFromGH(event.WorkflowJob.GetRunID())
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			b, ok := builds[event.WorkflowJob.GetHeadSHA()]
-			if !ok {
-				b = NewBuild(event.WorkflowJob.GetHeadSHA())
-				builds[event.WorkflowJob.GetHeadSHA()] = b
-			}
-			b.binaryURL = url
-			b.pendingCI = false
-			buildsCh <- b
 
 		case *github.CheckSuiteEvent:
 			log.Printf("Github checksuite event %s %s for %d %s\n",
@@ -200,25 +199,7 @@ func main() {
 
 					performCheckRun(event.CheckRun, wr.GetID(), buildsCh)
 				}
-				if event.CheckRun.GetConclusion() == "success" &&
-					event.CheckRun.GetName() == "build-linux" {
-					time.Sleep(5 * time.Second)
-					url, err := getTinygoBinaryURLFromGH(event.CheckRun.GetID())
-					if err != nil {
-						log.Println(err)
-						return
-					}
 
-					b, ok := builds[event.CheckRun.GetHeadSHA()]
-					if !ok {
-						b = NewBuild(event.CheckRun.GetHeadSHA())
-						builds[event.CheckRun.GetHeadSHA()] = b
-					}
-					b.binaryURL = url
-					b.pendingCI = false
-					buildsCh <- b
-
-				}
 			case "queued":
 				// received when a new commit is pushed
 			default:
