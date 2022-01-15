@@ -21,9 +21,8 @@ const (
 
 var (
 	// these will be overwritten by the ENV vars of the same name
-	citoken = "noneyet"
-	ghorg   = "tinygo-org"
-	ghrepo  = "tinygo"
+	ghorg  = "tinygo-org"
+	ghrepo = "tinygo"
 
 	ghwebhookpath = "/webhooks"
 	ciwebhookpath = "/buildhook"
@@ -32,24 +31,12 @@ var (
 
 	// key is sha
 	builds map[string]*Build
-
-	pollFrequency = 30 * time.Second
 )
 
 func main() {
 	ghwebhookpath = os.Getenv("GHWEBHOOKPATH")
 	if ghwebhookpath == "" {
 		log.Fatal("You must set an ENV var with your GHWEBHOOKPATH")
-	}
-
-	ciwebhookpath = os.Getenv("CIWEBHOOKPATH")
-	if ciwebhookpath == "" {
-		log.Fatal("You must set an ENV var with your CIWEBHOOKPATH")
-	}
-
-	citoken = os.Getenv("CITOKEN")
-	if citoken == "" {
-		log.Fatal("You must set an ENV var with your CITOKEN")
 	}
 
 	ghorg = os.Getenv("GHORG")
@@ -229,7 +216,7 @@ func processBuilds(builds chan *Build) {
 				url = build.binaryURL
 			}
 
-			log.Printf("Building docker image using TinyGo from %s\n", url)
+			log.Printf("Downloading TinyGo from %s\n", url)
 			err := downloadBinary(url, build.sha)
 			if err != nil {
 				log.Println(err)
@@ -237,6 +224,7 @@ func processBuilds(builds chan *Build) {
 				continue
 			}
 
+			log.Printf("Building docker image using TinyGo from %s\n", url)
 			err = buildDocker(build.sha)
 			if err != nil {
 				log.Println(err)
