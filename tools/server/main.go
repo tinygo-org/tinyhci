@@ -122,6 +122,14 @@ func main() {
 		case *github.PushEvent:
 			// ignore pushes because we only care about checks API
 			return
+		case *github.WorkflowRunEvent:
+			log.Printf("Github workflowrun on '%s' event %s %s for %d %s\n",
+				event.WorkflowRun.GetName(),
+				event.WorkflowRun.GetStatus(),
+				event.WorkflowRun.GetConclusion(),
+				event.WorkflowRun.GetID(),
+				event.WorkflowRun.GetHeadSHA())
+
 		case *github.WorkflowJobEvent:
 			log.Printf("Github workflowjob on '%s' event %s %s for %d %s\n",
 				event.WorkflowJob.GetName(),
@@ -194,6 +202,7 @@ func main() {
 				}
 				if event.CheckRun.GetConclusion() == "success" &&
 					event.CheckRun.GetName() == "build-linux" {
+					time.Sleep(5 * time.Second)
 					url, err := getTinygoBinaryURLFromGH(event.CheckRun.GetID())
 					if err != nil {
 						log.Println(err)
