@@ -98,11 +98,10 @@ endif
 install-tinygo:
 ifndef TINYGOINSTALLED
 	wget "https://github.com/tinygo-org/tinygo/releases/download/v$(TARGET_TINYGOVERSION)/tinygo$(TARGET_TINYGOVERSION).linux-amd64.tar.gz" -O /tmp/tinygo.tar.gz
-	tar -xzf /tmp/tinygo.tar.gz -C /usr/local
+	sudo tar -xzf /tmp/tinygo.tar.gz -C /usr/local
 	@echo "# add TinyGo to path" >> ~/.bashrc
 	@echo 'export PATH="$PATH:/usr/local/tinygo/bin\"' >> ~/.bashrc
 	source ~/.bashrc
-endif
 	echo "$(GREEN)TinyGo is now installed:$(NOCOLOR)\n"
 	tinygo version
 
