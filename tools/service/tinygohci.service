@@ -1,6 +1,6 @@
 [Unit]
 Description=TinyGo HCI service
-ConditionPathExists=/home/gigabyte/integration-tests/build/tinygohci
+ConditionPathExists=/home/gigabyte/tinyhci/build/tinygohci
 After=NetworkManager.service
 
 [Service]
@@ -10,8 +10,8 @@ User=gigabyte
 Restart=on-failure
 RestartSec=10
 
-WorkingDirectory=/home/gigabyte/integration-tests
-ExecStart=/home/gigabyte/integration-tests/build/tinygohci
+WorkingDirectory=/home/gigabyte/tinyhci
+ExecStart=/home/gigabyte/tinyhci/build/tinygohci
 
 # set the GHKEY value you need by using "sudo systemctl edit tinygohci" to edit the override file.
 # see the service/README.md file for more details
