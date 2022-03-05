@@ -169,7 +169,12 @@ docker:
 
 install-usbmount:
 	sudo apt install usbmount
-	
+
+install-usbmount-config:
+	sudo cp tools/usbmount/usbmount.conf /etc/usbmount/
+	sudo cp tools/usbmount/00_remove_model_symlink /etc/usbmount/umount.d/
+	sudo cp tools/usbmount/01_remove_label_symlink /etc/usbmount/umount.d/
+	sudo cp tools/usbmount/01_create_label_symlink /etc/usbmount/mount.d/
 
 install-udev-rules:
 	sudo cp tools/udev/99-named-devices.rules /etc/udev/rules.d/
