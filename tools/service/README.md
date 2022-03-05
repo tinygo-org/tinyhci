@@ -4,7 +4,7 @@ You will need to configure the systemd services on the HCI appliance.
 
 ## ngrok
 
-Make changes to the `/home/upsquared/.ngrok2/ngrok.yml` to match needed settings.
+Make changes to the `/home/gigabyte/.ngrok2/ngrok.yml` to match needed settings.
 
 ## tinygohci
 

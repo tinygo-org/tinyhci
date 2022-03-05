@@ -4,9 +4,9 @@ After=NetworkManager.service
 
 [Service]
 Type=simple
-User=upsquared
-WorkingDirectory=/home/upsquared
-ExecStart=/home/upsquared/ngrok start --all --config="/home/upsquared/.ngrok2/ngrok.yml"
+User=gigabyte
+WorkingDirectory=/home/gigabyte
+ExecStart=/home/gigabyte/ngrok start --all --config="/home/gigabyte/.ngrok2/ngrok.yml"
 Restart=on-failure
 
 [Install]

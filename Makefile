@@ -142,6 +142,10 @@ install-web-service:
 	sudo cp tools/service/tinygohci.service /etc/systemd/system/
 	sudo chmod 644 /etc/systemd/system/tinygohci.service
 
+install-ngrok:
+	wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.tgz
+	tar zxvf ngrok-stable-linux-amd64.tgz
+
 install-ngrok-service:
 	sudo cp tools/service/ngrok.service /etc/systemd/system/
 	sudo chmod 644 /etc/systemd/system/ngrok.service
@@ -162,6 +166,10 @@ stop-ngrok-service:
 
 docker:
 	DOCKER_BUILDKIT=1 docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz .
+
+install-usbmount:
+	sudo apt install usbmount
+	
 
 install-udev-rules:
 	sudo cp tools/udev/99-named-devices.rules /etc/udev/rules.d/

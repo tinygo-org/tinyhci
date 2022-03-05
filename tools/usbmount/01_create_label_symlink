@@ -20,6 +20,6 @@ test -z "$UM_DEVICE" && test -z "$UM_MOUNTPOINT" && exit 0
 label=`blkid -s LABEL -o value $UM_DEVICE`
 
 # If the symlink does not yet exist, create it.
-test -z $label || test -e "/media/upsquared/$label" || ln -sf "$UM_MOUNTPOINT" "/media/upsquared/$label"
+test -z $label || test -e "/media/gigabyte/$label" || ln -sf "$UM_MOUNTPOINT" "/media/gigabyte/$label"
 
 exit 0
