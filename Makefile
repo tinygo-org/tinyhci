@@ -102,6 +102,7 @@ ifndef TINYGOINSTALLED
 	@echo "# add TinyGo to path" >> ~/.bashrc
 	@echo 'export PATH="$PATH:/usr/local/tinygo/bin\"' >> ~/.bashrc
 	source ~/.bashrc
+endif
 	echo "$(GREEN)TinyGo is now installed:$(NOCOLOR)\n"
 	tinygo version
 
