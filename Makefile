@@ -111,7 +111,7 @@ update-tinygo:
 	tar -xzf /tmp/tinygo.tar.gz -C /usr/local
 
 install-bossa:
-	sudo apt install libreadline-dev libwxgtk3.0-*
+	sudo apt install build-essential libreadline-dev libwxgtk3.0-*
 	mkdir -p build
 	git clone https://github.com/shumatech/BOSSA.git build/BOSSA
 	make -C build/BOSSA
@@ -165,9 +165,10 @@ stop-ngrok-service:
 	sudo systemctl stop ngrok.service
 
 docker:
-	DOCKER_BUILDKIT=1 docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v0.13.1/tinygo0.13.1.linux-amd64.tar.gz .
+	DOCKER_BUILDKIT=1 docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v${TARGET_TINYGOVERSION}/tinygo${TARGET_TINYGOVERSION}.linux-amd64.tar.gz .
 
 install-usbmount:
+	sudo systemctl disable ModemManager.service
 	sudo apt install usbmount
 
 install-usbmount-config:
