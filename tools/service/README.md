@@ -12,12 +12,10 @@ Use `sudo systemctl edit tinygohci` to edit the override settings for the web se
 
 ```
 [Service]
-Environment="CITOKEN=putyourrealtokenhere"
 Environment="GHWEBHOOKPATH=putyourrealhookhere"
-Environment="CIWEBHOOKPATH=putyourrealhookhere"
 Environment="GHORG=putyourrealorghere"
 Environment="GHREPO=putyourrealrepohere"
-Environment="GHKEY=putyourrealkeyhere"
+Environment="GHKEY=putyourrealwebhookkeyhere"
 Environment="GHKEYFILE=putyourrealkeyfilenamehere"
 Environment="GHAPPID=putyourrealappidhere"
 Environment="GHINSTALLID=putyourrealinstallidhere"
