@@ -12,6 +12,9 @@ package main
 // I2C tests:
 // 	Uses built-in MAG3110 I2C device
 //
+// SPI tests:
+// 	CDI (P14) <--> CDO (P15)
+//
 import (
 	"machine"
 
@@ -41,6 +44,7 @@ func main() {
 	digitalReadGround()
 	digitalWrite()
 	i2cConnection()
+	spiTxRx()
 
 	endTests()
 }
@@ -147,6 +151,40 @@ func i2cConnection() {
 		return
 	}
 
+	printtestresult("pass")
+}
+
+// checks if it is possible to send/receive by spi
+func spiTxRx() {
+	spi0 := machine.SPI0
+	spi0.Configure(machine.SPIConfig{
+		SCK:       machine.SPI0_SCK_PIN,
+		SDO:       machine.SPI0_SDO_PIN,
+		SDI:       machine.SPI0_SDI_PIN,
+		Frequency: 4000000,
+	})
+
+	from := make([]byte, 8)
+	for i := range from {
+		from[i] = byte(i)
+	}
+	to := make([]byte, len(from))
+
+	printtest("spiTx")
+	err := spi0.Tx(from, to)
+	if err != nil {
+		printtestresult("fail")
+	} else {
+		printtestresult("pass")
+	}
+
+	printtest("spiRx")
+	for i := range from {
+		if from[i] != to[i] {
+			printtestresult("fail")
+			return
+		}
+	}
 	printtestresult("pass")
 }
 
