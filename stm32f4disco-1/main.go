@@ -16,6 +16,9 @@ package main
 // 	STM32F407 G <--> MPU-6050 GND
 // 	STM32F407 3V <--> MPU-6050 VCC
 //
+// SPI tests:
+// 	STM32F407 SDO (PA7) <--> STM32F407 SDI (PA6)
+//
 import (
 	"machine"
 
@@ -44,6 +47,7 @@ func main() {
 	digitalReadGround()
 	digitalWrite()
 	i2cConnection()
+	spiTxRx()
 
 	endTests()
 }
@@ -156,6 +160,40 @@ func i2cConnection() {
 
 	printtestresult("fail")
 	return
+}
+
+// checks if it is possible to send/receive by spi
+func spiTxRx() {
+	spi0 := machine.SPI0
+	spi0.Configure(machine.SPIConfig{
+		SCK:       machine.SPI0_SCK_PIN,
+		SDO:       machine.SPI0_SDO_PIN,
+		SDI:       machine.SPI0_SDI_PIN,
+		Frequency: 4000000,
+	})
+
+	from := make([]byte, 8)
+	for i := range from {
+		from[i] = byte(i)
+	}
+	to := make([]byte, len(from))
+
+	printtest("spiTx")
+	err := spi0.Tx(from, to)
+	if err != nil {
+		printtestresult("fail")
+	} else {
+		printtestresult("pass")
+	}
+
+	printtest("spiRx")
+	for i := range from {
+		if from[i] != to[i] {
+			printtestresult("fail")
+			return
+		}
+	}
+	printtestresult("pass")
 }
 
 func printtest(testname string) {
