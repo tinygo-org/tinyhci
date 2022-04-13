@@ -13,9 +13,9 @@
 #
 set -e
 
-ls /media/gigabyte | while read label; do
-    if test "`readlink \"/media/gigabyte/$label\" || :`" = "$UM_MOUNTPOINT"; then
-        rm -f "/media/gigabyte/$label"
+ls /media/tinyhci | while read label; do
+    if test "`readlink \"/media/tinyhci/$label\" || :`" = "$UM_MOUNTPOINT"; then
+        rm -f "/media/tinyhci/$label"
     fi
 done
 
