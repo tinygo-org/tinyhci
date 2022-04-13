@@ -16,7 +16,7 @@ test-itsybitsy-m4: build/testrunner
 	tinygo flash -size short -target=itsybitsy-m4 -port=/dev/itsybitsy_m4 ./itsybitsy-m4/
 	@sleep 2.0s
 	@echo "Running tests..."
-	./build/testrunner /dev/itsybitsy_m4 115200 5
+	../build/testrunner /dev/itsybitsy_m4 115200 5
 
 test-arduino-nano33: build/testrunner
 	tinygo flash -size short -target=arduino-nano33 -port=/dev/arduino_nano33 ./arduino-nano33/
@@ -56,11 +56,12 @@ test-circuitplay-express: build/testrunner
 #	./build/testrunner /dev/ttyACM0 115200 5
 
 test-maixbit: build/testrunner
-	tinygo flash -size short -target=maixbit -port=/dev/ttyUSB0 ./maixbit/
+	cd ./maixbit
+	tinygo flash -size short -target=maixbit -port=/dev/ttyUSB0 ./
 #	tinygo flash -size short -target=maixbit -port=/dev/maixbit ./maixbit/
 	@sleep 2.0s
 	@echo "Running tests..."
-	./build/testrunner /dev/ttyUSB0 115200 2
+	../build/testrunner /dev/ttyUSB0 115200 2
 #	./build/testrunner /dev/maixbit 115200 2
 
 test-itsybitsy-nrf52840: build/testrunner
@@ -69,7 +70,7 @@ test-itsybitsy-nrf52840: build/testrunner
 	@sleep 2.0s
 	@echo "Running tests..."
 #	./build/testrunner /dev/itsybitsy_nrf52840 115200 2
-	./build/testrunner /dev/ttyACM0 115200 2
+	../build/testrunner /dev/ttyACM0 115200 2
 
 test-stm32f407disco: build/testrunner
 	tinygo flash -size short -target=stm32f4disco-1 ./stm32f4disco/
@@ -163,6 +164,10 @@ start-ngrok-service:
 
 stop-ngrok-service:
 	sudo systemctl stop ngrok.service
+
+install-docker:
+	sudo apt install docker.io
+	sudo usermod -aG docker $USER
 
 docker:
 	DOCKER_BUILDKIT=1 docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v${TARGET_TINYGOVERSION}/tinygo${TARGET_TINYGOVERSION}.linux-amd64.tar.gz .
