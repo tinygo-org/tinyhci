@@ -74,7 +74,7 @@ Analog inputs are connected using a voltage divider made using two resistors. Th
 
 ### SPI
 
-TODO
+The chip data input and output are wired in a loopback form in order to test if the pins are writing and reading the expected values.
 
 ### PWM
 
