@@ -15,6 +15,9 @@ package main
 // 	HiFive1b G <--> MPU-6050 GND
 // 	HiFive1b D9 <--> MPU-6050 VCC
 //
+// SPI (SPI1) tests:
+// 	HiFive1b CDO - D11 <--> HiFive1b CDI - D12
+//
 import (
 	"machine"
 
@@ -45,6 +48,7 @@ func main() {
 	digitalReadGround()
 	digitalWrite()
 	i2cConnection()
+	spiTxRx()
 
 	endTests()
 }
@@ -167,6 +171,40 @@ func i2cConnection() {
 		return
 	}
 
+	printtestresult("pass")
+}
+
+// checks if it is possible to send/receive by spi
+func spiTxRx() {
+	spi1 := machine.SPI1
+	spi1.Configure(machine.SPIConfig{
+		SCK:       machine.SPI1_SCK_PIN,
+		SDO:       machine.SPI1_SDO_PIN,
+		SDI:       machine.SPI1_SDI_PIN,
+		Frequency: 4000000,
+	})
+
+	from := make([]byte, 8)
+	for i := range from {
+		from[i] = byte(i)
+	}
+	to := make([]byte, len(from))
+
+	printtest("spiTx")
+	err := spi1.Tx(from, to)
+	if err != nil {
+		printtestresult("fail")
+	} else {
+		printtestresult("pass")
+	}
+
+	printtest("spiRx")
+	for i := range from {
+		if from[i] != to[i] {
+			printtestresult("fail")
+			return
+		}
+	}
 	printtestresult("pass")
 }
 
