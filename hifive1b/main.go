@@ -20,6 +20,7 @@ package main
 //
 import (
 	"machine"
+	"strconv"
 
 	"time"
 
@@ -185,8 +186,8 @@ func spiTxRx() {
 	})
 
 	from := make([]byte, 8)
-	for i := range from {
-		from[i] = byte(i)
+	for i, _ := range from {
+		from[i] = byte(i + 1)
 	}
 	to := make([]byte, len(from))
 
@@ -199,9 +200,11 @@ func spiTxRx() {
 	}
 
 	printtest("spiRx")
-	for i := range from {
+	for i, _ := range from {
 		if from[i] != to[i] {
 			printtestresult("fail")
+			printfailexpected("from[" + strconv.Itoa(i) + "] != to[" + strconv.Itoa(i) + "]: " + strconv.Itoa(int(from[i])))
+			printfailactual(strconv.Itoa(int(to[i])))
 			return
 		}
 	}
@@ -220,6 +223,6 @@ func printfailexpected(reason string) {
 	println("        expected:", reason)
 }
 
-func printfailactual(val uint16) {
+func printfailactual(val string) {
 	println("        actual:", val)
 }
