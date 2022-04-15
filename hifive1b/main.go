@@ -57,7 +57,7 @@ func main() {
 	i2cConnection()
 	spiTx()
 	// TODO: fix SPI read
-	spiRx()
+	// spiRx()
 
 	endTests()
 }
