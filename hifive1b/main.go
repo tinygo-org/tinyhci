@@ -42,6 +42,12 @@ var (
 func main() {
 	machine.Serial.Configure(machine.UARTConfig{})
 	machine.I2C0.Configure(machine.I2CConfig{})
+	machine.SPI1.Configure(machine.SPIConfig{
+		SCK:       machine.SPI1_SCK_PIN,
+		SDO:       machine.SPI1_SDO_PIN,
+		SDI:       machine.SPI1_SDI_PIN,
+		Frequency: 4000000,
+	})
 
 	waitForStart()
 
@@ -49,7 +55,9 @@ func main() {
 	digitalReadGround()
 	digitalWrite()
 	i2cConnection()
-	spiTxRx()
+	spiTx()
+	// TODO: fix SPI read
+	spiRx()
 
 	endTests()
 }
@@ -175,15 +183,9 @@ func i2cConnection() {
 	printtestresult("pass")
 }
 
-// checks if it is possible to send/receive by spi
-func spiTxRx() {
+// checks if it is possible to send by spi
+func spiTx() {
 	spi1 := machine.SPI1
-	spi1.Configure(machine.SPIConfig{
-		SCK:       machine.SPI1_SCK_PIN,
-		SDO:       machine.SPI1_SDO_PIN,
-		SDI:       machine.SPI1_SDI_PIN,
-		Frequency: 4000000,
-	})
 
 	from := make([]byte, 8)
 	for i, _ := range from {
@@ -198,8 +200,24 @@ func spiTxRx() {
 	} else {
 		printtestresult("pass")
 	}
+}
+
+// checks if it is possible to receive by spi
+func spiRx() {
+	spi1 := machine.SPI1
+
+	from := make([]byte, 8)
+	for i, _ := range from {
+		from[i] = byte(i + 1)
+	}
+	to := make([]byte, len(from))
 
 	printtest("spiRx")
+	err := spi1.Tx(from, to)
+	if err != nil {
+		printtestresult("fail")
+	}
+
 	for i, _ := range from {
 		if from[i] != to[i] {
 			printtestresult("fail")
