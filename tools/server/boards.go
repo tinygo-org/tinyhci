@@ -81,7 +81,7 @@ var (
 			port:        "itsybitsy_nrf52840",
 			baud:        115200,
 			resetpause:  2 * time.Second,
-			enabled:     false,
+			enabled:     true,
 		},
 		&Board{
 			target:      "stm32f4disco-1",
