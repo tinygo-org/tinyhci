@@ -22,11 +22,20 @@ func main() {
 	speed, _ := strconv.Atoi(os.Args[2])
 
 	// open serial port
-	p, err := serial.Open(port, &serial.Mode{BaudRate: speed})
+	var p serial.Port
+	var err error
+	for i := 0; i < 3; i++ {
+		p, err = serial.Open(port, &serial.Mode{BaudRate: speed})
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second)
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "serial open error: %v\n", err)
 		os.Exit(1)
 	}
+
 	defer p.Close()
 
 	// Reads up to 100 bytes
