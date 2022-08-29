@@ -22,7 +22,6 @@ ARG TINYGO_DOWNLOAD_SHA=1234
 
 ADD tools/docker/versions/${TINYGO_DOWNLOAD_SHA}.tar.gz /usr/local
 ENV PATH=${PATH}:/usr/local/tinygo/bin
-RUN go get -d tinygo.org/x/drivers
 
 RUN apt-get remove -y wget && \
     apt-get autoremove -y && \
