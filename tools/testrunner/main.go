@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 4 {
+	if len(os.Args) < 3 {
 		fmt.Println("Not enough arguments")
 		os.Exit(1)
 	}
