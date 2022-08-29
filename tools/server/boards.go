@@ -24,7 +24,7 @@ var (
 			displayname: "Adafruit ItsyBitsy-M4",
 			port:        "itsybitsy_m4",
 			baud:        115200,
-			resetpause:  2 * time.Second,
+			resetpause:  5 * time.Second,
 			enabled:     true,
 		},
 		&Board{
@@ -40,7 +40,7 @@ var (
 			displayname: "Arduino Nano33 IoT",
 			port:        "arduino_nano33",
 			baud:        115200,
-			resetpause:  2 * time.Second,
+			resetpause:  5 * time.Second,
 			enabled:     true,
 		},
 		&Board{
@@ -48,7 +48,7 @@ var (
 			displayname: "bbc:microbit",
 			port:        "microbit",
 			baud:        115200,
-			resetpause:  2 * time.Second,
+			resetpause:  5 * time.Second,
 			enabled:     true,
 		},
 		&Board{
@@ -64,7 +64,7 @@ var (
 			displayname: "Adafruit Circuit Playground Express",
 			port:        "circuitplay_express",
 			baud:        115200,
-			resetpause:  2 * time.Second,
+			resetpause:  5 * time.Second,
 			enabled:     true,
 		},
 		&Board{
@@ -72,7 +72,7 @@ var (
 			displayname: "Sipeed MAix BiT",
 			port:        "maixbit00",
 			baud:        115200,
-			resetpause:  2 * time.Second,
+			resetpause:  5 * time.Second,
 			enabled:     true,
 		},
 		&Board{
@@ -88,7 +88,7 @@ var (
 			displayname: "STM32F407 Discovery",
 			port:        "stm32f4disco",
 			baud:        115200,
-			resetpause:  2 * time.Second,
+			resetpause:  5 * time.Second,
 			enabled:     true,
 		},
 	}
