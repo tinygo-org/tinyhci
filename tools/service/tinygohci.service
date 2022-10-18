@@ -1,7 +1,7 @@
 [Unit]
 Description=TinyGo HCI service
 ConditionPathExists=/home/tinyhci/tinyhci/build/tinygohci
-After=NetworkManager.service
+After=ngrok.service
 
 [Service]
 Type=simple
