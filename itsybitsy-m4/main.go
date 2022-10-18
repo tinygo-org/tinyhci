@@ -268,8 +268,13 @@ func i2cConnection() {
 	// turn on power and should be connected now
 	powerpin.High()
 	time.Sleep(100 * time.Millisecond)
+	machine.I2C0.Configure(machine.I2CConfig{})
 
-	accel.Configure()
+	err := accel.Configure()
+	if err != nil {
+	    printtestresult(err.Error())
+	    return
+	}
 	time.Sleep(100 * time.Millisecond)
 
 	if !accel.Connected() {
