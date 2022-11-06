@@ -40,6 +40,9 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="8051", SYMLINK+="i
 # ItsyBitsy-nRF52840 bootloader
 SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", ATTRS{idProduct}=="0051", SYMLINK+="itsybitsy_nrf52840"
 
+# RP2040 Pico
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000A", SYMLINK+="pico"
+
 # STM32F407 Discovery STLink
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", \
     MODE:="0666", \
