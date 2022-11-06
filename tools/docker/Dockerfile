@@ -1,7 +1,7 @@
 FROM debian:stable-slim AS tinygohci-base
 
 RUN apt-get clean && apt-get update && \
-    apt-get install -y wget gcc gcc-avr avr-libc avrdude git make build-essential libreadline-dev libwxgtk3.0-* python3 python3-pip openocd
+    apt-get install -y wget gcc avrdude git make build-essential libreadline-dev libwxgtk3.0-* python3 python3-pip openocd
 
 RUN git clone https://github.com/shumatech/BOSSA.git && \
     cd BOSSA && \
@@ -10,14 +10,14 @@ RUN git clone https://github.com/shumatech/BOSSA.git && \
 
 RUN pip3 install git+https://github.com/kendryte/kflash.py.git
 
-ENV GO_RELEASE=1.18.5
+ENV GO_RELEASE=1.19.3
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
     tar xfv go${GO_RELEASE}.linux-amd64.tar.gz -C /usr/local && \
     rm go${GO_RELEASE}.linux-amd64.tar.gz
 ENV PATH=${PATH}:/usr/local/go/bin
 
 FROM tinygohci-base AS tinygohci-build
-ENV TINYGO_RELEASE=0.21.0
+ENV TINYGO_RELEASE=0.26.0
 ARG TINYGO_DOWNLOAD_SHA=1234
 
 ADD tools/docker/versions/${TINYGO_DOWNLOAD_SHA}.tar.gz /usr/local
