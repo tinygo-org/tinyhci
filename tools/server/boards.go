@@ -91,6 +91,14 @@ var (
 			resetpause:  5 * time.Second,
 			enabled:     true,
 		},
+		&Board{
+			target:      "pico",
+			displayname: "RP2040 Pico",
+			port:        "pico",
+			baud:        115200,
+			resetpause:  5 * time.Second,
+			enabled:     true,
+		},
 	}
 )
 
