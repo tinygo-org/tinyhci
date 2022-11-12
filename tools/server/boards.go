@@ -132,6 +132,7 @@ func (board *Board) flash(sha string) (string, error) {
 		buildtag,
 		"tinygo", "flash",
 		"-size", "short",
+		"-retries", "25",
 		"-target", board.target,
 		port,
 		".").CombinedOutput()
