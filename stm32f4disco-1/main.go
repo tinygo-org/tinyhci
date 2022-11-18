@@ -10,15 +10,25 @@ package main
 //	PD4 <--> 3V
 //	PD1 <--> PD2
 //
+// Analog read tests:
+//	PC1 <--> 3.3V
+//	PC2 <--> 3.3V/2 (use voltage divider)
+//	PC3 <--> G
+//
 // I2C tests:
 // 	STM32F407 SCL (PB6) <--> MPU-6050 SCL
 // 	STM32F407 SDA (PB9) <--> MPU-6050 SDA
 // 	STM32F407 G <--> MPU-6050 GND
 // 	STM32F407 3V <--> MPU-6050 VCC
 //
+// SPI tests:
+// 	STM32F407 SPI0 SDO (PA7) <--> STM32F407 SPI0 SDI (PA6)
+//  *note that SPI0 and SPI1 are the same since there is no SPI0
+//
 import (
 	"machine"
 
+	"strconv"
 	"time"
 
 	"tinygo.org/x/drivers/mpu6050"
@@ -31,19 +41,34 @@ var (
 	readpin  = machine.PD2
 	writepin = machine.PD1
 
+	// used by analog tests
+	analogV    = machine.ADC{machine.PC1}
+	analogHalf = machine.ADC{machine.PC2}
+	analogG    = machine.ADC{machine.PC3}
+
 	// used by i2c tests
 	accel *mpu6050.Device
 )
 
+const (
+	maxanalog       = 65535
+	allowedvariance = 4096
+)
+
 func main() {
 	machine.I2C0.Configure(machine.I2CConfig{})
+	machine.InitADC()
 
 	waitForStart()
 
 	digitalReadVoltage()
 	digitalReadGround()
 	digitalWrite()
+	analogReadVoltage()
+	analogReadGround()
+	analogReadHalfVoltage()
 	i2cConnection()
+	spiTxRx()
 
 	endTests()
 }
@@ -140,6 +165,89 @@ func digitalWrite() {
 	}
 }
 
+// analog read of pin connected to supply voltage.
+func analogReadVoltage() {
+	analogV.Configure(machine.ADCConfig{})
+	time.Sleep(100 * time.Millisecond)
+
+	printtest("analogReadVoltage")
+
+	// should be close to max
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogV.Get()
+		avg += int(v)
+		time.Sleep(10 * time.Millisecond)
+	}
+	avg /= 10
+	val := uint16(avg)
+
+	if val >= maxanalog-allowedvariance {
+		printtestresult("pass")
+
+		return
+	} else {
+		printtestresult("fail")
+		printfailexpected("'val >= 65535-" + strconv.Itoa(allowedvariance) + "'")
+		printfailactual(val)
+	}
+}
+
+// analog read of pin connected to ground.
+func analogReadGround() {
+	analogG.Configure(machine.ADCConfig{})
+	time.Sleep(100 * time.Millisecond)
+
+	printtest("analogReadGround")
+
+	// should be close to zero
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogG.Get()
+		avg += int(v)
+		time.Sleep(10 * time.Millisecond)
+	}
+	avg /= 10
+	val := uint16(avg)
+
+	if val <= allowedvariance {
+		printtestresult("pass")
+		return
+	} else {
+		printtestresult("fail")
+		printfailexpected("'val <= 65535/2+" + strconv.Itoa(allowedvariance) + " && val >= 65535/2-" + strconv.Itoa(allowedvariance) + "'")
+		printfailactual(val)
+	}
+}
+
+// analog read of pin connected to supply voltage that has been divided by 2
+// using resistors.
+func analogReadHalfVoltage() {
+	analogHalf.Configure(machine.ADCConfig{})
+	time.Sleep(100 * time.Millisecond)
+
+	printtest("analogReadHalfVoltage")
+
+	// should be around half the max
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogHalf.Get()
+		avg += int(v)
+		time.Sleep(10 * time.Millisecond)
+	}
+	avg /= 10
+	val := uint16(avg)
+
+	if val <= maxanalog/2+allowedvariance && val >= maxanalog/2-allowedvariance {
+		printtestresult("pass")
+		return
+	}
+
+	printtestresult("fail")
+	printfailexpected("'val <= 65535/2+4096 && val >= 65535/2-4096'")
+	printfailactual(val)
+}
+
 // checks to see if an attached MPU-6050 accelerometer is connected.
 func i2cConnection() {
 	a := mpu6050.New(machine.I2C0)
@@ -156,6 +264,40 @@ func i2cConnection() {
 
 	printtestresult("fail")
 	return
+}
+
+// checks if it is possible to send/receive by spi
+func spiTxRx() {
+	spi0 := machine.SPI0
+	spi0.Configure(machine.SPIConfig{
+		SCK:       machine.SPI0_SCK_PIN,
+		SDO:       machine.SPI0_SDO_PIN,
+		SDI:       machine.SPI0_SDI_PIN,
+		Frequency: 4000000,
+	})
+
+	from := make([]byte, 8)
+	for i := range from {
+		from[i] = byte(i)
+	}
+	to := make([]byte, len(from))
+
+	printtest("spiTx")
+	err := spi0.Tx(from, to)
+	if err != nil {
+		printtestresult("fail")
+	} else {
+		printtestresult("pass")
+	}
+
+	printtest("spiRx")
+	for i := range from {
+		if from[i] != to[i] {
+			printtestresult("fail")
+			return
+		}
+	}
+	printtestresult("pass")
 }
 
 func printtest(testname string) {
