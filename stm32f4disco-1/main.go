@@ -12,8 +12,8 @@ package main
 //
 // Analog read tests:
 //	PC1 <--> 3.3V
-//	PC2 <--> 3.3V/2 (use voltage divider)
-//	PC3 <--> G
+//	PC4 <--> 3.3V/2 (use voltage divider)
+//	PC5 <--> G
 //
 // I2C tests:
 // 	STM32F407 SCL (PB6) <--> MPU-6050 SCL
@@ -43,8 +43,8 @@ var (
 
 	// used by analog tests
 	analogV    = machine.ADC{machine.PC1}
-	analogHalf = machine.ADC{machine.PC2}
-	analogG    = machine.ADC{machine.PC3}
+	analogHalf = machine.ADC{machine.PC4}
+	analogG    = machine.ADC{machine.PC5}
 
 	// used by i2c tests
 	accel *mpu6050.Device
