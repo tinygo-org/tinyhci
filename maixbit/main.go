@@ -15,10 +15,10 @@ package main
 //	D18 <--> D19
 //
 // I2C tests:
-// 	MAix Bit SCL (D35) <--> TMP102 SCL
-// 	MAix Bit SDA (D34) <--> TMP102 SDA
-// 	MAix Bit G         <--> TMP102 GND
-// 	MAix Bit D33       <--> TMP102 VCC
+// 	MAix Bit SCL (D35) <--> MPU6050 SCL
+// 	MAix Bit SDA (D34) <--> MPU6050 SDA
+// 	MAix Bit G         <--> MPU6050 GND
+// 	MAix Bit D33       <--> MPU6050 VCC
 //
 // SPI tests:
 // 	MAix Bit CDO - D28 <--> MAix Bit CDI - D26
