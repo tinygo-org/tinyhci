@@ -5,9 +5,14 @@ package main
 // Wire up the pins, and run it while connected to the USB port.
 //
 // Digital read/write tests:
-//	D12 <--> G
-//	D11 <--> 3V
-//	D10 <--> D9
+//	P16 <--> G
+//	P3 <--> 3V
+//	P4 <--> P5
+//
+// Analog read tests:
+//	P0 <--> 3.3V
+//	P1 <--> 3.3V/2 (use voltage divider)
+//	P2 <--> G
 //
 // I2C tests:
 // 	Uses built-in MAG3110 I2C device
@@ -18,6 +23,7 @@ package main
 import (
 	"machine"
 
+	"strconv"
 	"time"
 
 	"tinygo.org/x/drivers/mag3110"
@@ -25,24 +31,38 @@ import (
 
 var (
 	// used by digital tests
-	readV    = machine.P0
-	readG    = machine.P1
-	readpin  = machine.P2
-	writepin = machine.P16
+	readV    = machine.P3
+	readG    = machine.P16
+	readpin  = machine.P5
+	writepin = machine.P4
+
+	// used by analog tests
+	analogV    = machine.ADC{machine.P0}
+	analogHalf = machine.ADC{machine.P1}
+	analogG    = machine.ADC{machine.P2}
 
 	// used by i2c tests
 	mag *mag3110.Device
 )
 
+const (
+	maxanalog       = 65535
+	allowedvariance = 4096
+)
+
 func main() {
 	machine.Serial.Configure(machine.UARTConfig{})
 	machine.I2C0.Configure(machine.I2CConfig{})
+	machine.InitADC()
 
 	waitForStart()
 
 	digitalReadVoltage()
 	digitalReadGround()
 	digitalWrite()
+	analogReadVoltage()
+	analogReadGround()
+	analogReadHalfVoltage()
 	i2cConnection()
 	spiTxRx()
 
@@ -51,8 +71,6 @@ func main() {
 
 // wait for keypress on serial port to start test suite.
 func waitForStart() {
-	//time.Sleep(3 * time.Second)
-
 	println("=== TINYGO INTEGRATION TESTS ===")
 	println("Press 't' key to begin running tests...")
 
@@ -138,13 +156,96 @@ func digitalWrite() {
 	}
 }
 
+// analog read of pin connected to supply voltage.
+func analogReadVoltage() {
+	analogV.Configure(machine.ADCConfig{})
+	time.Sleep(100 * time.Millisecond)
+
+	printtest("analogReadVoltage")
+
+	// should be close to max
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogV.Get()
+		avg += int(v)
+		time.Sleep(10 * time.Millisecond)
+	}
+	avg /= 10
+	val := uint16(avg)
+
+	if val >= maxanalog-allowedvariance {
+		printtestresult("pass")
+
+		return
+	} else {
+		printtestresult("fail")
+		printfailexpected("'val >= 65535-" + strconv.Itoa(allowedvariance) + "'")
+		printfailactual(val)
+	}
+}
+
+// analog read of pin connected to ground.
+func analogReadGround() {
+	analogG.Configure(machine.ADCConfig{})
+	time.Sleep(100 * time.Millisecond)
+
+	printtest("analogReadGround")
+
+	// should be close to zero
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogG.Get()
+		avg += int(v)
+		time.Sleep(10 * time.Millisecond)
+	}
+	avg /= 10
+	val := uint16(avg)
+
+	if val <= allowedvariance {
+		printtestresult("pass")
+		return
+	} else {
+		printtestresult("fail")
+		printfailexpected("'val <= 65535/2+" + strconv.Itoa(allowedvariance) + " && val >= 65535/2-" + strconv.Itoa(allowedvariance) + "'")
+		printfailactual(val)
+	}
+}
+
+// analog read of pin connected to supply voltage that has been divided by 2
+// using resistors.
+func analogReadHalfVoltage() {
+	analogHalf.Configure(machine.ADCConfig{})
+	time.Sleep(100 * time.Millisecond)
+
+	printtest("analogReadHalfVoltage")
+
+	// should be around half the max
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogHalf.Get()
+		avg += int(v)
+		time.Sleep(10 * time.Millisecond)
+	}
+	avg /= 10
+	val := uint16(avg)
+
+	if val <= maxanalog/2+allowedvariance && val >= maxanalog/2-allowedvariance {
+		printtestresult("pass")
+		return
+	}
+
+	printtestresult("fail")
+	printfailexpected("'val <= 65535/2+4096 && val >= 65535/2-4096'")
+	printfailactual(val)
+}
+
 // checks to see if the onboard MAG3110 is connected.
 func i2cConnection() {
+	printtest("i2cConnection")
+
 	m := mag3110.New(machine.I2C0)
 	m.Configure()
 	mag = &m
-
-	printtest("i2cConnection")
 
 	if !mag.Connected() {
 		printtestresult("fail")
