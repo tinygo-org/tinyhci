@@ -5,7 +5,7 @@ package main
 // Wire up the pins, and run it while connected to the USB port.
 //
 // Digital read/write tests:
-//	A2 <--> G
+//	A0 <--> G
 //	A1 <--> 3V
 //	A4 <--> A5
 //
@@ -29,7 +29,7 @@ import (
 var (
 	// used by digital tests
 	readV    = machine.A1
-	readG    = machine.A2
+	readG    = machine.A0
 	readpin  = machine.A5
 	writepin = machine.A4
 
