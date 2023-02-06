@@ -1,7 +1,7 @@
-TARGET_GOVERSION := go1.18.5
+TARGET_GOVERSION := go1.19.5
 GOINSTALLED := $(shell command -v go 2> /dev/null)
 CURRENT_GOVERSION  := $(shell go version | awk '{print $$3}')
-TARGET_TINYGOVERSION := 0.22.0
+TARGET_TINYGOVERSION := 0.26.0
 TINYGOINSTALLED := $(shell command -v tinygo 2> /dev/null)
 CURRENT_TINYGOVERSION  := $(shell tinygo version | awk '{print $$3}')
 NOCOLOR := \033[0m
@@ -171,6 +171,9 @@ install-docker:
 
 docker:
 	DOCKER_BUILDKIT=1 docker build -t tinygohci -f tools/docker/Dockerfile --build-arg TINYGO_DOWNLOAD_URL=https://github.com/tinygo-org/tinygo/releases/download/v${TARGET_TINYGOVERSION}/tinygo${TARGET_TINYGOVERSION}.linux-amd64.tar.gz .
+
+docker-rebuild-base:
+	DOCKER_BUILDKIT=1 docker build --no-cache -t tinygohci -f tools/docker/Dockerfile --target tinygohci-base .
 
 install-usbmount:
 	sudo systemctl disable ModemManager.service
