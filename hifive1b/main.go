@@ -7,7 +7,7 @@ package main
 // Digital read/write tests:
 //	D4 <--> G
 //	D2 <--> 3V
-//	D0 <--> D3
+//	D5 <--> D3
 //
 // I2C tests:
 // 	HiFive1b SCL (D19) <--> MPU-6050 SCL
@@ -18,6 +18,9 @@ package main
 // SPI (SPI1) tests:
 // 	HiFive1b CDO - D11 <--> HiFive1b CDI - D12
 //
+// UART:
+//  HiFive1b RX (D0) <--> FTDI TX
+//  HiFive1b TX (D1) <--> FTDI RX
 import (
 	"machine"
 	"strconv"
@@ -31,8 +34,8 @@ var (
 	// used by digital tests
 	readV    = machine.D2
 	readG    = machine.D4
-	readpin  = machine.D5
-	writepin = machine.D3
+	readpin  = machine.D3
+	writepin = machine.D5
 
 	// used by i2c tests
 	accel    *mpu6050.Device
@@ -124,6 +127,8 @@ func digitalReadGround() {
 
 // digital write on/off of one pin as input physically connected to a different pin as output.
 func digitalWrite() {
+	readpin.Low()
+	writepin.Low()
 	readpin.Configure(machine.PinConfig{Mode: machine.PinInput})
 	writepin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	time.Sleep(100 * time.Millisecond)
