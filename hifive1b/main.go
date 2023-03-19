@@ -163,6 +163,8 @@ func digitalWrite() {
 func i2cConnection() {
 	powerpin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	time.Sleep(100 * time.Millisecond)
+	powerpin.Low()
+	time.Sleep(100 * time.Millisecond)
 
 	a := mpu6050.New(machine.I2C0)
 	accel = &a
