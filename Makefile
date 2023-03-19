@@ -1,4 +1,4 @@
-TARGET_GOVERSION := go1.19.5
+TARGET_GOVERSION := go1.20
 GOINSTALLED := $(shell command -v go 2> /dev/null)
 CURRENT_GOVERSION  := $(shell go version | awk '{print $$3}')
 TARGET_TINYGOVERSION := 0.26.0
@@ -80,7 +80,6 @@ test-stm32f407disco: build/testrunner
 	./build/testrunner /dev/ttyUSB0 115200 3
 
 update-go:
-	@test "$(CURRENT_GOVERSION)" = "$(TARGET_GOVERSION)" && ( echo "$(RED)$(TARGET_GOVERSION) has already been installed$(NOCOLOR)\n" ; exit 1 )
 	wget "https://dl.google.com/go/$(TARGET_GOVERSION).linux-amd64.tar.gz" -O /tmp/go.tar.gz
 	sudo rm -rf /usr/local/go
 	sudo tar -xzf /tmp/go.tar.gz -C /usr/local
@@ -109,7 +108,7 @@ endif
 
 update-tinygo:
 	wget "https://github.com/tinygo-org/tinygo/releases/download/v$(TARGET_TINYGOVERSION)/tinygo$(TARGET_TINYGOVERSION).linux-amd64.tar.gz" -O /tmp/tinygo.tar.gz
-	tar -xzf /tmp/tinygo.tar.gz -C /usr/local
+	sudo tar -xzf /tmp/tinygo.tar.gz -C /usr/local
 
 install-bossa:
 	sudo apt install build-essential libreadline-dev libwxgtk3.0-*
@@ -244,6 +243,15 @@ powercycle-circuitplay-express:
 	fi
 	@sleep 3.0s
 	@uhubctl -l 1-3.4 -a on -p 1
+
+powercycle-pico:
+	@uhubctl -l 1-4.4 -a off -p 1
+	DEV="/sys/bus/usb/devices/1-4.4.1/"; \
+	if [ -d $$DEV ]; then \
+		sudo udevadm trigger --action=remove $$DEV ; \
+	fi
+	@sleep 3.0s
+	@uhubctl -l 1-4.4 -a on -p 1
 
 # powercycle-maixbit:
 # 	@uhubctl -l 1-2 -a cycle -p 1
