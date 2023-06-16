@@ -11,9 +11,7 @@ RUN git clone https://github.com/shumatech/BOSSA.git && \
     make bossac && \
     cp bin/bossac /usr/local/bin
 
-RUN apt install -y python3-pipx && \
-    pipx ensurepath && \
-    pipx install git+https://github.com/kendryte/kflash.py.git
+RUN pip3 install git+https://github.com/kendryte/kflash.py.git
 
 ENV GO_RELEASE=1.20.2
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
