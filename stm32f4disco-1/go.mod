@@ -2,4 +2,6 @@ module stm32f4disco-1
 
 go 1.17
 
-require tinygo.org/x/drivers v0.23.1-0.20221115165824-5b2c2f800d7f
+require tinygo.org/x/drivers v0.25.0
+
+require github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
