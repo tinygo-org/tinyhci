@@ -8,7 +8,7 @@ COPY tools/docker/gitconfig.txt /etc/gitconfig
 
 RUN git clone https://github.com/shumatech/BOSSA.git && \
     cd BOSSA && \
-    make && \
+    make bossac && \
     cp bin/bossac /usr/local/bin
 
 RUN pip3 install git+https://github.com/kendryte/kflash.py.git
