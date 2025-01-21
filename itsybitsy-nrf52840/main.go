@@ -215,7 +215,7 @@ func analogReadGround() {
 		return
 	} else {
 		printtestresult("fail")
-		printfailexpected("'val <= 65535/2+" + strconv.Itoa(allowedvariance) + " && val >= 65535/2-" + strconv.Itoa(allowedvariance) + "'")
+		printfailexpected("'val <= " + strconv.Itoa(allowedvariance) + "'")
 		printfailactual(val)
 	}
 }
@@ -265,8 +265,8 @@ func i2cConnection() {
 
 	err := accel.Configure()
 	if err != nil {
-	    printtestresult(err.Error())
-	    return
+		printtestresult(err.Error())
+		return
 	}
 	time.Sleep(500 * time.Millisecond)
 
@@ -311,7 +311,6 @@ func spiTxRx() {
 	}
 	printtestresult("pass")
 }
-
 
 func printtest(testname string) {
 	print("- " + testname + " = ")
