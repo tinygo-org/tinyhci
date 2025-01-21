@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path/filepath"
 	"fmt"
 	"log"
 	"os"
@@ -284,15 +285,21 @@ func downloadBinary(url, sha string) error {
 		}
 		log.Println("downloaded bytes:", resp.BytesComplete())
 		// unzip
+		log.Println("unzipping")
 		out, err := exec.Command("unzip", "tinygo-latest.zip",
-			"tinygo.linux-amd64.tar.gz").CombinedOutput()
+			"tinygo*.linux-amd64.tar.gz").CombinedOutput()
 		if err != nil {
 			return err
 		}
 		log.Println(string(out))
 
 		// move file
-		err = os.Rename("tinygo.linux-amd64.tar.gz", "tools/docker/versions/"+sha+".tar.gz")
+		log.Println("moving file")
+		f, err := filepath.Glob("tinygo*.linux-amd64.tar.gz")
+		if err != nil {
+			return err
+		}
+		err = os.Rename(f[0], "tools/docker/versions/"+sha+".tar.gz")
 		if err != nil {
 			return err
 		}

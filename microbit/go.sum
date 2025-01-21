@@ -2,3 +2,5 @@ github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 h1:El6M4kTTCOh6aBiKaU
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510/go.mod h1:pupxD2MaaD3pAXIBCelhxNneeOaAeabZDe5s4K6zSpQ=
 tinygo.org/x/drivers v0.27.0 h1:TEGk1lQvEhXxfvpEhUu+pwmCnhtldPI+hpHlO9VYixI=
 tinygo.org/x/drivers v0.27.0/go.mod h1:q/mU8G/wz821p8xXqbkBACOlmZFDHXd//DnYnCW+dDQ=
+tinygo.org/x/drivers v0.28.0 h1:ROVrGGXddmpn2+oV/Bu3LceYbtPCJckmgIqvPcN/L0k=
+tinygo.org/x/drivers v0.28.0/go.mod h1:T6snsUqS0RAxOANxiV81fQwLxDDNmprxTAYzmxoA7J0=
