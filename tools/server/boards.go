@@ -25,7 +25,7 @@ var (
 			port:        "itsybitsy_m4",
 			baud:        115200,
 			resetpause:  5 * time.Second,
-			enabled:     true,
+			enabled:     false,
 		},
 		&Board{
 			target:      "arduino",
@@ -44,12 +44,12 @@ var (
 			enabled:     true,
 		},
 		&Board{
-			target:      "microbit",
+			target:      "microbit-v2",
 			displayname: "bbc:microbit",
 			port:        "microbit",
 			baud:        115200,
-			resetpause:  5 * time.Second,
-			enabled:     true,
+			resetpause:  9 * time.Second,
+			enabled:     false,
 		},
 		&Board{
 			target:      "hifive1b",
@@ -64,7 +64,7 @@ var (
 			displayname: "Adafruit Circuit Playground Express",
 			port:        "circuitplay_express",
 			baud:        115200,
-			resetpause:  5 * time.Second,
+			resetpause:  7 * time.Second,
 			enabled:     true,
 		},
 		&Board{
@@ -73,14 +73,14 @@ var (
 			port:        "maixbit00",
 			baud:        115200,
 			resetpause:  5 * time.Second,
-			enabled:     true,
+			enabled:     false,
 		},
 		&Board{
 			target:      "itsybitsy-nrf52840",
 			displayname: "ItsyBitsy nRF52840",
 			port:        "itsybitsy_nrf52840",
 			baud:        115200,
-			resetpause:  5 * time.Second,
+			resetpause:  7 * time.Second,
 			enabled:     true,
 		},
 		&Board{
