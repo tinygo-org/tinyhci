@@ -1,7 +1,7 @@
-TARGET_GOVERSION := go1.20
+TARGET_GOVERSION := go1.24.2
 GOINSTALLED := $(shell command -v go 2> /dev/null)
 CURRENT_GOVERSION  := $(shell go version | awk '{print $$3}')
-TARGET_TINYGOVERSION := 0.26.0
+TARGET_TINYGOVERSION := 0.37.0
 TINYGOINSTALLED := $(shell command -v tinygo 2> /dev/null)
 CURRENT_TINYGOVERSION  := $(shell tinygo version | awk '{print $$3}')
 NOCOLOR := \033[0m
@@ -19,9 +19,11 @@ test-itsybitsy-m4: build/testrunner
 	../build/testrunner /dev/itsybitsy_m4 115200 5
 
 test-arduino-nano33: build/testrunner
-	tinygo flash -size short -target=arduino-nano33 -port=/dev/arduino_nano33 ./arduino-nano33/
+	cd ./arduino-nano33
+	tinygo flash -size short -target=arduino-nano33 -port=/dev/arduino_nano33 .
 	@sleep 2.0s
 	@echo "Running tests..."
+	cd ..
 	./build/testrunner /dev/arduino_nano33 115200 5
 
 test-docker-itsybitsy-m4: build/testrunner
