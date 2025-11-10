@@ -40,7 +40,7 @@ var (
 			displayname: "Arduino Nano33 IoT",
 			port:        "arduino_nano33",
 			baud:        115200,
-			resetpause:  5 * time.Second,
+			resetpause:  15 * time.Second,
 			enabled:     true,
 		},
 		&Board{
@@ -64,7 +64,7 @@ var (
 			displayname: "Adafruit Circuit Playground Express",
 			port:        "circuitplay_express",
 			baud:        115200,
-			resetpause:  7 * time.Second,
+			resetpause:  15 * time.Second,
 			enabled:     true,
 		},
 		&Board{
