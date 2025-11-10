@@ -13,14 +13,14 @@ RUN git clone https://github.com/shumatech/BOSSA.git && \
 
 RUN pip3 install git+https://github.com/kendryte/kflash.py.git --break-system-packages
 
-ENV GO_RELEASE=1.20.2
+ENV GO_RELEASE=1.25.4
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
     tar xfv go${GO_RELEASE}.linux-amd64.tar.gz -C /usr/local && \
     rm go${GO_RELEASE}.linux-amd64.tar.gz
 ENV PATH=${PATH}:/usr/local/go/bin
 
 FROM tinygohci-base AS tinygohci-build
-ENV TINYGO_RELEASE=0.27.0
+ENV TINYGO_RELEASE=0.39.0
 ARG TINYGO_DOWNLOAD_SHA=1234
 
 ADD tools/docker/versions/${TINYGO_DOWNLOAD_SHA}.tar.gz /usr/local
