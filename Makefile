@@ -58,13 +58,10 @@ test-circuitplay-express: build/testrunner
 #	./build/testrunner /dev/ttyACM0 115200 5
 
 test-maixbit: build/testrunner
-	cd ./maixbit
-	tinygo flash -size short -target=maixbit -port=/dev/ttyUSB0 ./
-#	tinygo flash -size short -target=maixbit -port=/dev/maixbit ./maixbit/
+	cd ./maixbit && tinygo flash -size short -target=maixbit -port=/dev/ttyUSB0 .
 	@sleep 2.0s
 	@echo "Running tests..."
-	../build/testrunner /dev/ttyUSB0 115200 2
-#	./build/testrunner /dev/maixbit 115200 2
+	./build/testrunner /dev/ttyUSB0 115200 2
 
 test-itsybitsy-nrf52840: build/testrunner
 #	tinygo flash -size short -target=itsybitsy-nrf52840 -port=/dev/itsybitsy_nrf52840 ./itsybitsy-nrf52840/
@@ -80,6 +77,12 @@ test-stm32f407disco: build/testrunner
 	@echo "Running tests..."
 #	./build/testrunner /dev/hifive1b 115200 5
 	./build/testrunner /dev/ttyUSB0 115200 3
+
+test-xiao-esp32c3: build/testrunner
+	cd ./xiao-esp32c3 && tinygo flash -size short -target=xiao-esp32c3 -port=/dev/ttyACM0 .
+	@sleep 5.0s
+	@echo "Running tests..."
+	./build/testrunner /dev/ttyACM0 115200 2
 
 update-go:
 	wget "https://dl.google.com/go/$(TARGET_GOVERSION).linux-amd64.tar.gz" -O /tmp/go.tar.gz
