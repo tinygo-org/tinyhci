@@ -72,7 +72,7 @@ var (
 			displayname: "Sipeed MAix BiT",
 			port:        "maixbit00",
 			baud:        115200,
-			resetpause:  5 * time.Second,
+			resetpause:  10 * time.Second,
 			enabled:     false,
 		},
 		&Board{
@@ -95,6 +95,14 @@ var (
 			target:      "pico",
 			displayname: "RP2040 Pico",
 			port:        "pico",
+			baud:        115200,
+			resetpause:  5 * time.Second,
+			enabled:     true,
+		},
+		&Board{
+			target:      "xiao-esp32c3",
+			displayname: "Seeed Studio XIAO ESP32C3",
+			port:        "xiao_esp32c3",
 			baud:        115200,
 			resetpause:  5 * time.Second,
 			enabled:     true,
