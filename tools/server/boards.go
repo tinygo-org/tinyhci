@@ -104,7 +104,7 @@ var (
 			displayname: "Seeed Studio XIAO ESP32C3",
 			port:        "xiao_esp32c3",
 			baud:        115200,
-			resetpause:  5 * time.Second,
+			resetpause:  10 * time.Second,
 			enabled:     true,
 		},
 	}
@@ -125,9 +125,15 @@ func (board *Board) flash(sha string) (string, error) {
 	if err != nil {
 		return err.Error(), err
 	}
+
+	realdev, err := os.Readlink("/dev/" + board.port)
+	if err != nil {
+		return err.Error(), err
+	}
+
 	buildtag := fmt.Sprintf("tinygohci:%s", sha[:7])
-	device := fmt.Sprintf("--device=/dev/%s:/dev/%s:rwm", board.port, board.port)
-	port := fmt.Sprintf("-port=/dev/%s", board.port)
+	device := fmt.Sprintf("--device=/dev/%s:/dev/%s:rwm", realdev, realdev)
+	port := fmt.Sprintf("-port=/dev/%s", realdev)
 	workdir := fmt.Sprintf("/src/%s", board.target)
 	out, err := exec.Command("docker", "run",
 		device,
@@ -148,7 +154,11 @@ func (board *Board) flash(sha string) (string, error) {
 }
 
 func (board *Board) test() (string, error) {
-	port := fmt.Sprintf("/dev/%s", board.port)
+	realdev, err := os.Readlink("/dev/" + board.port)
+	if err != nil {
+		return err.Error(), err
+	}
+	port := fmt.Sprintf("/dev/%s", realdev)
 	br := strconv.Itoa(board.baud)
 
 	out, err := exec.Command("./build/testrunner", port, br, "5").CombinedOutput()
