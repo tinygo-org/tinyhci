@@ -6,6 +6,9 @@ RUN apt-get clean && apt-get update && \
 # to address https://github.com/golang/go/issues/51253
 COPY tools/docker/gitconfig.txt /etc/gitconfig
 
+RUN pip3 install esptool && \
+    esptool.py version
+
 RUN git clone https://github.com/shumatech/BOSSA.git && \
     cd BOSSA && \
     make bossac && \
@@ -13,7 +16,7 @@ RUN git clone https://github.com/shumatech/BOSSA.git && \
 
 RUN pip3 install git+https://github.com/kendryte/kflash.py.git --break-system-packages
 
-ENV GO_RELEASE=1.25.4
+ENV GO_RELEASE=1.25.5
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
     tar xfv go${GO_RELEASE}.linux-amd64.tar.gz -C /usr/local && \
     rm go${GO_RELEASE}.linux-amd64.tar.gz
