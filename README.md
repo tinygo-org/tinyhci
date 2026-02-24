@@ -7,15 +7,19 @@ TinyHCI is used to test the TinyGo (http://tinygo.org) `machine` package's hardw
 Hardware in the loop integration tests have been implemented for the following 10 boards:
 
 - Adafruit Circuit Playground Express (Microchip SAMD21x based on ARM Cortex-M0)
-- Adafruit ItsyBitsy-M4 (Microchip SAMD51x based on ARM Cortex-M4)
 - Adafruit ItsyBitsy-NRF52840 (Nordic Semiconductor nRF52840 based on ARM Cortex-M4)
 - Arduino Nano33-IoT (Microchip SAMD21x based on ARM Cortex-M0)
 - Arduino Uno (Atmel ATmega328p based on AVR)
-- bbc:microbit (Nordic Semiconductor nRF51 based on ARM Cortex-M0)
 - Raspberry Pi RP2040 Pico (Raspberry Pi Ltd 32-bit dual ARM Cortex-M0+)
+- STMicro STM32F407 Discovery (STMicro STM32F407VG based on ARM Cortex-M4)
+- Seeedstudio Xiao-ESP32C3 (32-bit core RISC-V microcontroller)
+
+The following boards are current inactive:
+
+- Adafruit ItsyBitsy-M4 (Microchip SAMD51x based on ARM Cortex-M4)
+- bbc:microbit (Nordic Semiconductor nRF51 based on ARM Cortex-M0)
 - SiFive HiFive1 RevB (Freedom E310 based on RISC-V)
 - Sipeed MAix BiT (Kendryte K210 based on RISC-V)
-- STMicro STM32F407 Discovery (STMicro STM32F407VG based on ARM Cortex-M4)
 
 ## How it works
 
