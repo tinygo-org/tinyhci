@@ -25,11 +25,11 @@ package main
 //
 import (
 	"machine"
-	"strconv"
 
 	"time"
 
 	"tinygo.org/x/drivers/mpu6050"
+	"tinygo.org/x/tap"
 )
 
 var (
@@ -61,14 +61,56 @@ func main() {
 
 	waitForStart()
 
-	digitalReadVoltage()
-	digitalReadGround()
-	digitalWrite()
-	analogReadVoltage()
-	analogReadGround()
-	analogReadHalfVoltage()
-	i2cConnection()
-	spiTxRx()
+	t := tap.New()
+	t.Header(8)
+
+	if digitalReadVoltage() {
+		t.Pass("digital read voltage")
+	} else {
+		t.Fail("digital read voltage")
+	}
+
+	if digitalReadGround() {
+		t.Pass("digital read ground")
+	} else {
+		t.Fail("digital read ground")
+	}
+
+	if digitalWrite() {
+		t.Pass("digital write")
+	} else {
+		t.Fail("digital write")
+	}
+
+	if analogReadVoltage() {
+		t.Pass("analog read voltage")
+	} else {
+		t.Fail("analog read voltage")
+	}
+
+	if analogReadGround() {
+		t.Pass("analog read ground")
+	} else {
+		t.Fail("analog read ground")
+	}
+
+	if analogReadHalfVoltage() {
+		t.Pass("analog read half voltage")
+	} else {
+		t.Fail("analog read half voltage")
+	}
+
+	if i2cConnection() {
+		t.Pass("i2c connection")
+	} else {
+		t.Fail("i2c connection")
+	}
+
+	if spiTxRx() {
+		t.Pass("spi tx/rx")
+	} else {
+		t.Fail("spi tx/rx")
+	}
 
 	endTests()
 }
@@ -92,85 +134,57 @@ func waitForStart() {
 	}
 }
 
-func endTests() {
-	println("\n### Tests complete.")
-
-	// tests done, now sleep waiting for baud reset to load new code
-	for {
-		time.Sleep(1 * time.Second)
-	}
-}
+func endTests() {}
 
 // digital read of D11 pin physically connected to V
-func digitalReadVoltage() {
-	printtest("digitalReadVoltage")
-
+func digitalReadVoltage() bool {
 	readV.Configure(machine.PinConfig{Mode: machine.PinInput})
 	time.Sleep(100 * time.Millisecond)
 
 	// should be on
-	if readV.Get() {
-		printtestresult("pass")
-		return
-	}
-
-	printtestresult("fail")
+	return readV.Get()
 }
 
 // digital read of D12 pin physically connected to G
-func digitalReadGround() {
-	printtest("digitalReadGround")
-
+func digitalReadGround() bool {
 	readG.Configure(machine.PinConfig{Mode: machine.PinInput})
 	time.Sleep(100 * time.Millisecond)
 
 	// should be off
-	if readG.Get() {
-		printtestresult("fail")
-		return
-	}
-
-	printtestresult("pass")
+	return !readG.Get()
 }
 
 // digital write on/off of D9 pin as input physically connected to D10 pin as output.
-func digitalWrite() {
+func digitalWrite() bool {
 	readpin.Configure(machine.PinConfig{Mode: machine.PinInput})
 	writepin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	time.Sleep(100 * time.Millisecond)
 
-	printtest("digitalWriteOn")
 	writepin.High()
 	time.Sleep(100 * time.Millisecond)
 
 	// should be on
-	if readpin.Get() {
-		printtestresult("pass")
-	} else {
-		printtestresult("fail")
+	if !readpin.Get() {
+		return false
 	}
 
 	time.Sleep(100 * time.Millisecond)
 
-	printtest("digitalWriteOff")
 	writepin.Low()
 	time.Sleep(100 * time.Millisecond)
 
 	// should be off
 	if readpin.Get() {
-		printtestresult("fail")
-		return
-	} else {
-		printtestresult("pass")
+		return false
 	}
+
+	return true
 }
 
 // analog read of pin connected to supply voltage.
-func analogReadVoltage() {
+func analogReadVoltage() bool {
 	analogV.Configure(machine.ADCConfig{})
 	time.Sleep(100 * time.Millisecond)
-
-	printtest("analogReadVoltage")
 
 	// should be close to max
 	var avg int
@@ -182,23 +196,17 @@ func analogReadVoltage() {
 	avg /= 10
 	val := uint16(avg)
 
-	if val >= maxanalog-allowedvariance {
-		printtestresult("pass")
-
-		return
-	} else {
-		printtestresult("fail")
-		printfailexpected("'val >= 65535-" + strconv.Itoa(allowedvariance) + "'")
-		printfailactual(val)
+	if val < maxanalog-allowedvariance {
+		return false
 	}
+
+	return true
 }
 
 // analog read of pin connected to ground.
-func analogReadGround() {
+func analogReadGround() bool {
 	analogG.Configure(machine.ADCConfig{})
 	time.Sleep(100 * time.Millisecond)
-
-	printtest("analogReadGround")
 
 	// should be close to zero
 	var avg int
@@ -210,23 +218,18 @@ func analogReadGround() {
 	avg /= 10
 	val := uint16(avg)
 
-	if val <= allowedvariance {
-		printtestresult("pass")
-		return
-	} else {
-		printtestresult("fail")
-		printfailexpected("'val <= " + strconv.Itoa(allowedvariance) + "'")
-		printfailactual(val)
+	if val > allowedvariance {
+		return false
 	}
+
+	return true
 }
 
 // analog read of pin connected to supply voltage that has been divided by 2
 // using resistors.
-func analogReadHalfVoltage() {
+func analogReadHalfVoltage() bool {
 	analogHalf.Configure(machine.ADCConfig{})
 	time.Sleep(100 * time.Millisecond)
-
-	printtest("analogReadHalfVoltage")
 
 	// should be around half the max
 	var avg int
@@ -238,25 +241,21 @@ func analogReadHalfVoltage() {
 	avg /= 10
 	val := uint16(avg)
 
-	if val <= maxanalog/2+allowedvariance && val >= maxanalog/2-allowedvariance {
-		printtestresult("pass")
-		return
+	if val > maxanalog/2+allowedvariance || val < maxanalog/2-allowedvariance {
+		return false
 	}
 
-	printtestresult("fail")
-	printfailexpected("'val <= 65535/2+4096 && val >= 65535/2-4096'")
-	printfailactual(val)
+	return true
 }
 
 // checks to see if an attached MPU-6050 accelerometer is connected.
-func i2cConnection() {
+func i2cConnection() bool {
 	powerpin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	time.Sleep(100 * time.Millisecond)
 
 	a := mpu6050.New(machine.I2C0)
 	accel = &a
 
-	printtest("i2cConnectionPower")
 	// turn on power and should be connected now
 	powerpin.High()
 	time.Sleep(200 * time.Millisecond)
@@ -265,21 +264,19 @@ func i2cConnection() {
 
 	err := accel.Configure()
 	if err != nil {
-		printtestresult(err.Error())
-		return
+		return false
 	}
 	time.Sleep(500 * time.Millisecond)
 
 	if !accel.Connected() {
-		printtestresult("fail")
-		return
+		return false
 	}
 
-	printtestresult("pass")
+	return true
 }
 
 // checks if it is possible to send/receive by spi
-func spiTxRx() {
+func spiTxRx() bool {
 	spi0 := machine.SPI0
 	spi0.Configure(machine.SPIConfig{
 		SCK:       machine.SPI0_SCK_PIN,
@@ -294,36 +291,16 @@ func spiTxRx() {
 	}
 	to := make([]byte, len(from))
 
-	printtest("spiTx")
 	err := spi0.Tx(from, to)
 	if err != nil {
-		printtestresult("fail")
-	} else {
-		printtestresult("pass")
+		return false
 	}
 
-	printtest("spiRx")
 	for i := range from {
 		if from[i] != to[i] {
-			printtestresult("fail")
-			return
+			return false
 		}
 	}
-	printtestresult("pass")
-}
 
-func printtest(testname string) {
-	print("- " + testname + " = ")
-}
-
-func printtestresult(result string) {
-	println("***" + result + "***")
-}
-
-func printfailexpected(reason string) {
-	println("        expected:", reason)
-}
-
-func printfailactual(val uint16) {
-	println("        actual:", val)
+	return true
 }

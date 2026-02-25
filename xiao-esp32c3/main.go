@@ -1,53 +1,66 @@
-package main
-
 // Integration tests for Xiao ESP32-C3
 //
 // Wire up the pins, and run it while connected to the USB port.
 //
 // Digital read/write tests (GPIO):
+//
 //	D0  <--> 3V3
 //	D2  <--> D3
 //
 // I2C tests:
-// 	Xiao ESP32-C3 SCL (D5) <--> MPU6050 SCL
-// 	Xiao ESP32-C3 SDA (D4) <--> MPU6050 SDA
-// 	Xiao ESP32-C3 G        <--> MPU6050 GND
-// 	Xiao ESP32-C3 3V3      <--> MPU6050 VCC
+//
+//	Xiao ESP32-C3 SCL (D5) <--> MPU6050 SCL
+//	Xiao ESP32-C3 SDA (D4) <--> MPU6050 SDA
+//	Xiao ESP32-C3 G        <--> MPU6050 GND
+//	Xiao ESP32-C3 3V3      <--> MPU6050 VCC
 //
 // SPI tests:
-// 	Xiao ESP32-C3 CDO - D10 <--> Xiao ESP32-C3 CDI - D9
 //
+//	Xiao ESP32-C3 CDO - D10 <--> Xiao ESP32-C3 CDI - D9
+package main
+
 import (
 	"machine"
-
 	"time"
 
 	"tinygo.org/x/drivers/mpu6050"
-)
-
-var (
-	// used by digital GPIO tests
-	readV    = machine.D0
-	readpin  = machine.D2
-	writepin = machine.D3
-
-	// used by i2c tests
-	accel    *mpu6050.Device
-	powerpin = machine.D3
+	"tinygo.org/x/tap"
 )
 
 func main() {
 	waitForStart()
 
-	digitalReadVoltageGPIO()
-	digitalWriteGPIO()
-	i2cConnection()
-	spiTxRx()
+	t := tap.New()
+	t.Header(4)
+
+	if digitalReadVoltageGPIO() {
+		t.Pass("digitalReadVoltage (GPIO)")
+	} else {
+		t.Fail("digitalReadVoltage (GPIO)")
+	}
+
+	if digitalWriteGPIO() {
+		t.Pass("digitalWrite (GPIO)")
+	} else {
+		t.Fail("digitalWrite (GPIO)")
+	}
+
+	if i2cConnection() {
+		t.Pass("i2cConnection (MPU6050)")
+	} else {
+		t.Fail("i2cConnection (MPU6050)")
+	}
+
+	if spiTxRx() {
+		t.Pass("spiTxRx")
+	} else {
+		t.Fail("spiTxRx")
+	}
 
 	endTests()
 }
 
-// wait for keypress on serial port to start test suite.
+// Wait for a signal to start tests (e.g., from serial)
 func waitForStart() {
 	time.Sleep(5 * time.Second)
 
@@ -66,90 +79,54 @@ func waitForStart() {
 	}
 }
 
+// Signal end of tests (optional)
 func endTests() {
-	println("\n### Tests complete.")
-
-	// tests done, now sleep waiting for baud reset to load new code
-	for {
-		time.Sleep(1 * time.Second)
-	}
+	// Implement as needed for your environment.
 }
 
-// digital read of a GPIO pin physically connected to V
-func digitalReadVoltageGPIO() {
-	printtest("digitalReadVoltage (GPIO)")
-
-	readV.Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
-	time.Sleep(100 * time.Millisecond)
-
-	// should be on
-	if readV.Get() {
-		printtestresult("pass")
-		return
-	}
-
-	printtestresult("fail")
+// Example test functions
+func digitalReadVoltageGPIO() bool {
+	readV := machine.D2
+	readV.Configure(machine.PinConfig{Mode: machine.PinInput})
+	return readV.Get()
 }
 
-// digital write on/off of one GPIO pin as input physically connected to a different GPIO pin as output.
-func digitalWriteGPIO() {
-	readpin.Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
+func digitalWriteGPIO() bool {
+	writepin := machine.D3
+	readpin := machine.D4
 	writepin.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	time.Sleep(100 * time.Millisecond)
+	readpin.Configure(machine.PinConfig{Mode: machine.PinInput})
 
-	printtest("digitalWriteOn (GPIO)")
 	writepin.High()
 	time.Sleep(100 * time.Millisecond)
-
-	// should be on
-	if readpin.Get() {
-		printtestresult("pass")
-	} else {
-		printtestresult("fail")
+	if !readpin.Get() {
+		return false
 	}
-
-	time.Sleep(100 * time.Millisecond)
-
-	printtest("digitalWriteOff (GPIO)")
 	writepin.Low()
 	time.Sleep(100 * time.Millisecond)
-
-	// should be off
-	if readpin.Get() {
-		printtestresult("fail")
-		return
-	} else {
-		printtestresult("pass")
-	}
+	return !readpin.Get()
 }
 
-// checks to see if an attached MPU6050 accelerometer is connected.
-func i2cConnection() {
-	machine.I2C0.Configure(machine.I2CConfig{})
-	time.Sleep(100 * time.Millisecond)
-
+func i2cConnection() bool {
+	i2c := machine.I2C0
+	i2c.Configure(machine.I2CConfig{})
 	a := mpu6050.New(machine.I2C0)
-	accel = &a
-
-	printtest("i2cConnection (MPU6050)")
+	accel := &a
 
 	err := accel.Configure()
 	if err != nil {
-		printtestresult(err.Error())
-		return
+		return false
 	}
-	time.Sleep(400 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 
 	if !accel.Connected() {
-		printtestresult("fail")
-		return
+		return false
 	}
 
-	printtestresult("pass")
+	return true
 }
 
-// checks if it is possible to send/receive by spi
-func spiTxRx() {
+func spiTxRx() bool {
 	spi0 := machine.SPI2
 	spi0.Configure(machine.SPIConfig{
 		SCK:       machine.SPI_SCK_PIN,
@@ -164,36 +141,15 @@ func spiTxRx() {
 	}
 	to := make([]byte, len(from))
 
-	printtest("spiTx")
 	err := spi0.Tx(from, to)
 	if err != nil {
-		printtestresult("fail")
-	} else {
-		printtestresult("pass")
+		return false
 	}
 
-	printtest("spiRx")
 	for i := range from {
 		if from[i] != to[i] {
-			printtestresult("fail")
-			return
+			return false
 		}
 	}
-	printtestresult("pass")
-}
-
-func printtest(testname string) {
-	print("- " + testname + " = ")
-}
-
-func printtestresult(result string) {
-	println("***" + result + "***")
-}
-
-func printfailexpected(reason string) {
-	println("        expected:", reason)
-}
-
-func printfailactual(val uint16) {
-	println("        actual:", val)
+	return true
 }
