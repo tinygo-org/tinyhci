@@ -19,11 +19,9 @@ test-itsybitsy-m4: build/testrunner
 	../build/testrunner /dev/itsybitsy_m4 115200 5
 
 test-arduino-nano33: build/testrunner
-	cd ./arduino-nano33
-	tinygo flash -size short -target=arduino-nano33 -port=/dev/arduino_nano33 .
+	cd ./arduino-nano33 && tinygo flash -size short -target=arduino-nano33 -port=/dev/arduino_nano33 .
 	@sleep 2.0s
 	@echo "Running tests..."
-	cd ..
 	./build/testrunner /dev/arduino_nano33 115200 5
 
 test-docker-itsybitsy-m4: build/testrunner
@@ -33,7 +31,8 @@ test-docker-itsybitsy-m4: build/testrunner
 	./build/testrunner /dev/itsybitsy_m4 115200 5
 
 test-arduino-uno: build/testrunner
-	tinygo flash -size short -target=arduino -port=/dev/arduino_uno ./arduino/
+	cd ./arduino && tinygo flash -size short -target=arduino -port=/dev/arduino_uno .
+	@sleep 5.0s
 	@echo "Running tests..."
 	./build/testrunner /dev/arduino_uno 57600 5
 
@@ -50,12 +49,10 @@ test-hifive: build/testrunner
 	./build/testrunner /dev/hifive1b 115200 5
 
 test-circuitplay-express: build/testrunner
-	tinygo flash -size short -target=circuitplay-express -port=/dev/circuitplay_express ./circuitplay-express/
-#	tinygo flash -size short -target=circuitplay-express ./circuitplay-express/
+	cd circuitplay-express && tinygo flash -size short -target=circuitplay-express -port=/dev/circuitplay_express .
 	@sleep 2.0s
 	@echo "Running tests..."
 	./build/testrunner /dev/circuitplay_express 115200 5
-#	./build/testrunner /dev/ttyACM0 115200 5
 
 test-maixbit: build/testrunner
 	cd ./maixbit && tinygo flash -size short -target=maixbit -port=/dev/ttyUSB0 .
@@ -64,18 +61,15 @@ test-maixbit: build/testrunner
 	./build/testrunner /dev/ttyUSB0 115200 2
 
 test-itsybitsy-nrf52840: build/testrunner
-#	tinygo flash -size short -target=itsybitsy-nrf52840 -port=/dev/itsybitsy_nrf52840 ./itsybitsy-nrf52840/
-	tinygo flash -size short -target=itsybitsy-nrf52840 ./itsybitsy-nrf52840/
+	cd ./itsybitsy-nrf52840 && tinygo flash -size short -target=itsybitsy-nrf52840 .
 	@sleep 2.0s
 	@echo "Running tests..."
-#	./build/testrunner /dev/itsybitsy_nrf52840 115200 2
-	../build/testrunner /dev/ttyACM0 115200 2
+	./build/testrunner /dev/ttyACM0 115200 2
 
 test-stm32f407disco: build/testrunner
-	tinygo flash -size short -target=stm32f4disco-1 ./stm32f4disco/
+	cd ./stm32f4disco && tinygo flash -size short -target=stm32f4disco-1 .
 	@sleep 3.0s
 	@echo "Running tests..."
-#	./build/testrunner /dev/hifive1b 115200 5
 	./build/testrunner /dev/ttyUSB0 115200 3
 
 test-xiao-esp32c3: build/testrunner
