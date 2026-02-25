@@ -65,60 +65,21 @@ func main() {
 	t := tap.New()
 	t.Header(8)
 
-	if digitalReadVoltage() {
-		t.Pass("digitalReadVoltage (GPIO)")
-	} else {
-		t.Fail("digitalReadVoltage (GPIO)")
-	}
-
-	if digitalReadGround() {
-		t.Pass("digitalReadGround (GPIO)")
-	} else {
-		t.Fail("digitalReadGround (GPIO)")
-	}
-
-	if digitalWrite() {
-		t.Pass("digitalWrite (GPIO)")
-	} else {
-		t.Fail("digitalWrite (GPIO)")
-	}
-
-	if analogReadVoltage() {
-		t.Pass("analogReadVoltage")
-	} else {
-		t.Fail("analogReadVoltage")
-	}
-
-	if analogReadGround() {
-		t.Pass("analogReadGround")
-	} else {
-		t.Fail("analogReadGround")
-	}
-
-	if analogReadHalfVoltage() {
-		t.Pass("analogReadHalfVoltage")
-	} else {
-		t.Fail("analogReadHalfVoltage")
-	}
-
-	if i2cConnection() {
-		t.Pass("i2cConnection (MPU6050)")
-	} else {
-		t.Fail("i2cConnection (MPU6050)")
-	}
-
-	if spiTxRx() {
-		t.Pass("spiTxRx")
-	} else {
-		t.Fail("spiTxRx")
-	}
+	t.Ok(digitalReadVoltage(), "digitalReadVoltage (GPIO)")
+	t.Ok(digitalReadGround(), "digitalReadGround (GPIO)")
+	t.Ok(digitalWrite(), "digitalWrite (GPIO)")
+	t.Ok(analogReadVoltage(), "analogReadVoltage (ADC)")
+	t.Ok(analogReadGround(), "analogReadGround (ADC)")
+	t.Ok(analogReadHalfVoltage(), "analogReadHalfVoltage (ADC)")
+	t.Ok(i2cConnection(), "i2cConnection (MPU6050)")
+	t.Ok(spiTxRx(), "spiTxRx (SPI)")
 
 	endTests()
 }
 
 // wait for keypress on serial port to start test suite.
 func waitForStart() {
-	time.Sleep(3 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	println("=== TINYGO INTEGRATION TESTS ===")
 	println("Press 't' key to begin running tests...")

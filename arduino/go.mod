@@ -3,7 +3,7 @@ module arduino
 go 1.25.5
 
 require (
-	tinygo.org/x/drivers v0.34.0
+	tinygo.org/x/drivers v0.33.0
 	tinygo.org/x/tap v0.0.0-20260225145634-bb17e38198a0
 )
 

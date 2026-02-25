@@ -64,53 +64,14 @@ func main() {
 	t := tap.New()
 	t.Header(8)
 
-	if digitalReadVoltage() {
-		t.Pass("digital read voltage")
-	} else {
-		t.Fail("digital read voltage")
-	}
-
-	if digitalReadGround() {
-		t.Pass("digital read ground")
-	} else {
-		t.Fail("digital read ground")
-	}
-
-	if digitalWrite() {
-		t.Pass("digital write")
-	} else {
-		t.Fail("digital write")
-	}
-
-	if analogReadVoltage() {
-		t.Pass("analog read voltage")
-	} else {
-		t.Fail("analog read voltage")
-	}
-
-	if analogReadGround() {
-		t.Pass("analog read ground")
-	} else {
-		t.Fail("analog read ground")
-	}
-
-	if analogReadHalfVoltage() {
-		t.Pass("analog read half voltage")
-	} else {
-		t.Fail("analog read half voltage")
-	}
-
-	if i2cConnection() {
-		t.Pass("i2c connection")
-	} else {
-		t.Fail("i2c connection")
-	}
-
-	if spiTxRx() {
-		t.Pass("spi tx/rx")
-	} else {
-		t.Fail("spi tx/rx")
-	}
+	t.Ok(digitalReadVoltage(), "digitalReadVoltage (GPIO)")
+	t.Ok(digitalReadGround(), "digitalReadGround (GPIO)")
+	t.Ok(digitalWrite(), "digitalWrite (GPIO)")
+	t.Ok(analogReadVoltage(), "analogReadVoltage (ADC)")
+	t.Ok(analogReadGround(), "analogReadGround (ADC)")
+	t.Ok(analogReadHalfVoltage(), "analogReadHalfVoltage (ADC)")
+	t.Ok(i2cConnection(), "i2cConnection")
+	t.Ok(spiTxRx(), "spiTxRx")
 
 	endTests()
 }
