@@ -73,7 +73,7 @@ func digitalReadVoltageGPIO() bool {
 }
 
 func digitalWriteGPIO() bool {
-	writepin := machine.D4
+	writepin := machine.D3
 	readpin := machine.D2
 	writepin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	readpin.Configure(machine.PinConfig{Mode: machine.PinInput})
