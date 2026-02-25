@@ -70,7 +70,7 @@ func main() {
 				p.Write([]byte("t"))
 				promptFound = true
 			}
-		case <-time.After(30 * time.Second):
+		case <-time.After(5 * time.Second):
 			fmt.Println("Timeout waiting for device prompt. trying anyhow...")
 			p.Write([]byte("t"))
 			promptFound = true
