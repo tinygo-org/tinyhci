@@ -4,7 +4,7 @@
 
 TinyHCI is used to test the TinyGo (http://tinygo.org) `machine` package's hardware abstraction layer with integration tests that use actual microcontroller hardware. It is intended to provide smoke test implementations that exercise the basic functionality for each kind of hardware interface for each supported microcontroller.
 
-Hardware in the loop integration tests have been implemented for the following 10 boards:
+Hardware in the loop integration tests have been implemented for the following boards:
 
 - Adafruit Circuit Playground Express (Microchip SAMD21x based on ARM Cortex-M0)
 - Adafruit ItsyBitsy-NRF52840 (Nordic Semiconductor nRF52840 based on ARM Cortex-M4)
@@ -14,7 +14,7 @@ Hardware in the loop integration tests have been implemented for the following 1
 - STMicro STM32F407 Discovery (STMicro STM32F407VG based on ARM Cortex-M4)
 - Seeedstudio Xiao-ESP32C3 (32-bit core RISC-V microcontroller)
 
-The following boards are current inactive:
+The following boards are currently inactive:
 
 - Adafruit ItsyBitsy-M4 (Microchip SAMD51x based on ARM Cortex-M4)
 - bbc:microbit (Nordic Semiconductor nRF51 based on ARM Cortex-M0)
@@ -53,18 +53,21 @@ One the MCU has been flashed with the test code, here is how it works with the `
 ```
 ./build/testrunner /dev/ttyACM0 115200 5
 
-- digitalReadVoltage = ***pass***
-- digitalReadGround = ***pass**
-- digitalWriteOn = ***pass**
-- digitalWriteOff = ***pass***
-- analogReadVoltage = ***pass***
-- analogReadGround = ***pass***
-- analogReadHalfVoltage = ***pass***
-- i2cConnectionNoPower = ***pass***
-- i2cConnectionPower = ***pass***
-
-### Tests complete.
+TAP version 13
+1..8
+ok 1 - digitalReadVoltage (GPIO)
+ok 2 - digitalReadGround (GPIO)
+ok 3 - digitalWrite (GPIO)
+ok 4 - analogReadVoltage (ADC)
+ok 5 - analogReadGround (ADC)
+ok 6 - analogReadHalfVoltage (ADC)
+ok 7 - i2cConnection (I2C)
+ok 8 - spiTxRx (SPI)
 ```
+
+## Hardware Tests
+
+Each board is flashed with a suite of hardware tests, and communicates back the results using the [Test Anything Protocal (TAP)](https://testanything.org/).
 
 ### Digital I/O
 
