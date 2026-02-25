@@ -33,29 +33,10 @@ func main() {
 	t := tap.New()
 	t.Header(4)
 
-	if digitalReadVoltageGPIO() {
-		t.Pass("digitalReadVoltage (GPIO)")
-	} else {
-		t.Fail("digitalReadVoltage (GPIO)")
-	}
-
-	if digitalWriteGPIO() {
-		t.Pass("digitalWrite (GPIO)")
-	} else {
-		t.Fail("digitalWrite (GPIO)")
-	}
-
-	if i2cConnection() {
-		t.Pass("i2cConnection (MPU6050)")
-	} else {
-		t.Fail("i2cConnection (MPU6050)")
-	}
-
-	if spiTxRx() {
-		t.Pass("spiTxRx")
-	} else {
-		t.Fail("spiTxRx")
-	}
+	t.Ok(digitalReadVoltageGPIO(), "digitalReadVoltage (GPIO)")
+	t.Ok(digitalWriteGPIO(), "digitalWrite (GPIO)")
+	t.Ok(i2cConnection(), "i2cConnection (MPU6050)")
+	t.Ok(spiTxRx(), "spiTxRx (SPI)")
 
 	endTests()
 }
@@ -86,14 +67,14 @@ func endTests() {
 
 // Example test functions
 func digitalReadVoltageGPIO() bool {
-	readV := machine.D2
+	readV := machine.D0
 	readV.Configure(machine.PinConfig{Mode: machine.PinInput})
 	return readV.Get()
 }
 
 func digitalWriteGPIO() bool {
-	writepin := machine.D3
-	readpin := machine.D4
+	writepin := machine.D4
+	readpin := machine.D2
 	writepin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	readpin.Configure(machine.PinConfig{Mode: machine.PinInput})
 

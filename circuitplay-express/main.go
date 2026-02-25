@@ -57,47 +57,13 @@ func main() {
 	t := tap.New()
 	t.Header(7)
 
-	if digitalReadVoltage() {
-		t.Pass("digitalReadVoltage (GPIO)")
-	} else {
-		t.Fail("digitalReadVoltage (GPIO)")
-	}
-
-	if digitalReadGround() {
-		t.Pass("digitalReadGround (GPIO)")
-	} else {
-		t.Fail("digitalReadGround (GPIO)")
-	}
-
-	if digitalWrite() {
-		t.Pass("digitalWrite (GPIO)")
-	} else {
-		t.Fail("digitalWrite (GPIO)")
-	}
-
-	if analogReadVoltage() {
-		t.Pass("analogReadVoltage (ADC)")
-	} else {
-		t.Fail("analogReadVoltage (ADC)")
-	}
-
-	if analogReadGround() {
-		t.Pass("analogReadGround (ADC)")
-	} else {
-		t.Fail("analogReadGround (ADC)")
-	}
-
-	if analogReadHalfVoltage() {
-		t.Pass("analogReadHalfVoltage (ADC)")
-	} else {
-		t.Fail("analogReadHalfVoltage (ADC)")
-	}
-
-	if i2cConnection() {
-		t.Pass("i2cConnection (MPU6050)")
-	} else {
-		t.Fail("i2cConnection (MPU6050)")
-	}
+	t.Ok(digitalReadVoltage(), "digitalReadVoltage (GPIO)")
+	t.Ok(digitalReadGround(), "digitalReadGround (GPIO)")
+	t.Ok(digitalWrite(), "digitalWrite (GPIO)")
+	t.Ok(analogReadVoltage(), "analogReadVoltage (ADC)")
+	t.Ok(analogReadGround(), "analogReadGround (ADC)")
+	t.Ok(analogReadHalfVoltage(), "analogReadHalfVoltage (ADC)")
+	t.Ok(i2cConnection(), "i2cConnection (LIS3DH)")
 
 	endTests()
 }
@@ -241,9 +207,8 @@ func analogReadHalfVoltage() bool {
 func i2cConnection() bool {
 	a := lis3dh.New(machine.I2C1)
 	accel = &a
-	accel.Address = lis3dh.Address1 // address on the Circuit Playground Express
 
-	accel.Configure()
+	accel.Configure(lis3dh.Config{Address: lis3dh.Address1})
 	time.Sleep(400 * time.Millisecond)
 
 	if !accel.Connected() {
