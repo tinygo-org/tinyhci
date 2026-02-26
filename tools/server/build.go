@@ -63,7 +63,7 @@ func flashout(out string) string {
 }
 
 func testsout(out string) string {
-	return "## Tests\n\n" +
+	return "## Tests\n\n```\n" +
 		out +
-		"\n\n"
+		"\n```\n\n"
 }
