@@ -70,8 +70,8 @@ func main() {
 	t.Ok(analogReadVoltage(), "analogReadVoltage (ADC)")
 	t.Ok(analogReadGround(), "analogReadGround (ADC)")
 	t.Ok(analogReadHalfVoltage(), "analogReadHalfVoltage (ADC)")
-	t.Ok(i2cConnection(), "i2cConnection")
-	t.Ok(spiTxRx(), "spiTxRx")
+	t.Ok(i2cConnection(), "i2cConnection (MPU6050)")
+	t.Ok(spiTxRx(), "spiTxRx (SPI)")
 
 	endTests()
 }
