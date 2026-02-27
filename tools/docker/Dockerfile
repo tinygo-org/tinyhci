@@ -13,8 +13,6 @@ RUN git clone https://github.com/shumatech/BOSSA.git && \
 
 RUN pip3 install git+https://github.com/kendryte/kflash.py.git --break-system-packages
 
-RUN pip3 install esptool --break-system-packages
-
 ENV GO_RELEASE=1.25.7
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
     tar xfv go${GO_RELEASE}.linux-amd64.tar.gz -C /usr/local && \
