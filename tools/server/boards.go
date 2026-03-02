@@ -11,6 +11,7 @@ import (
 type Board struct {
 	target      string
 	displayname string
+	image       string
 	port        string
 	baud        int
 	resetpause  time.Duration
@@ -30,6 +31,7 @@ var (
 		&Board{
 			target:      "arduino",
 			displayname: "Arduino Uno",
+			image:       "arduino.svg",
 			port:        "arduino_uno",
 			baud:        57600,
 			resetpause:  5 * time.Second,
@@ -38,6 +40,7 @@ var (
 		&Board{
 			target:      "arduino-nano33",
 			displayname: "Arduino Nano33 IoT",
+			image:       "arduino-nano33.svg",
 			port:        "arduino_nano33",
 			baud:        115200,
 			resetpause:  15 * time.Second,
@@ -62,6 +65,7 @@ var (
 		&Board{
 			target:      "circuitplay-express",
 			displayname: "Adafruit Circuit Playground Express",
+			image:       "circuit-playground.svg",
 			port:        "circuitplay_express",
 			baud:        115200,
 			resetpause:  15 * time.Second,
@@ -77,7 +81,8 @@ var (
 		},
 		&Board{
 			target:      "itsybitsy-nrf52840",
-			displayname: "ItsyBitsy nRF52840",
+			displayname: "Adafruit ItsyBitsy nRF52840",
+			image:       "itsybitsy-nrf52840.svg",
 			port:        "itsybitsy_nrf52840",
 			baud:        115200,
 			resetpause:  7 * time.Second,
@@ -86,6 +91,7 @@ var (
 		&Board{
 			target:      "stm32f4disco-1",
 			displayname: "STM32F407 Discovery",
+			image:       "stm32f407-discovery.svg",
 			port:        "stm32f4disco",
 			baud:        115200,
 			resetpause:  5 * time.Second,
@@ -93,7 +99,8 @@ var (
 		},
 		&Board{
 			target:      "pico",
-			displayname: "RP2040 Pico",
+			displayname: "Raspberry Pi RP2040 Pico",
+			image:       "pico.svg",
 			port:        "pico",
 			baud:        115200,
 			resetpause:  10 * time.Second,
@@ -101,7 +108,8 @@ var (
 		},
 		&Board{
 			target:      "xiao-esp32c3",
-			displayname: "Seeed Studio XIAO ESP32C3",
+			displayname: "Seeed Studio Xiao ESP32-C3",
+			image:       "xiao-esp32c3.svg",
 			port:        "xiao_esp32c3",
 			baud:        115200,
 			resetpause:  10 * time.Second,
@@ -161,6 +169,6 @@ func (board *Board) test() (string, error) {
 	port := fmt.Sprintf("/dev/%s", realdev)
 	br := strconv.Itoa(board.baud)
 
-	out, err := exec.Command("./build/testrunner", port, br, "5").CombinedOutput()
+	out, err := exec.Command("./build/testrunner", port, br, "2").CombinedOutput()
 	return string(out), err
 }

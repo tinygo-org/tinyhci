@@ -39,7 +39,7 @@ func (build Build) processBoardRun(board *Board) {
 	if err != nil {
 		log.Println(err)
 		log.Println(fout)
-		build.failCheckRun(board.target, flashout(fout))
+		build.failCheckRun(board.target, boardHeading(board)+flashout(fout))
 		return
 	}
 
@@ -49,11 +49,20 @@ func (build Build) processBoardRun(board *Board) {
 	out, err := board.test()
 	if err != nil {
 		log.Println(err)
-		build.failCheckRun(board.target, flashout(fout)+testsout(out))
+		build.failCheckRun(board.target, boardHeading(board)+flashout(fout)+testsout(out))
 		return
 	}
 
-	build.passCheckRun(board.target, flashout(fout)+testsout(out))
+	build.passCheckRun(board.target, boardHeading(board)+flashout(fout)+testsout(out))
+}
+
+func boardHeading(board *Board) string {
+	heading := "## " + board.displayname + "\n\n"
+	if board.image != "" {
+		heading = "![board image](https://raw.githubusercontent.com/tinygo-org/tinyhci/refs/heads/main/images/boards/" + board.image + ")\n\n" + heading
+	}
+
+	return heading
 }
 
 func flashout(out string) string {
