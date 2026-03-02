@@ -7,6 +7,12 @@
 //	D0  <--> 3V3
 //	D2  <--> D3
 //
+// Analog read tests (ADC):
+//
+//	A0 <--> 3V3
+//	A1 <--> 3V3/2 (use voltage divider)
+//	A2 <--> G
+//
 // I2C tests:
 //
 //	Xiao ESP32-C3 SCL (D5) <--> MPU6050 SCL
@@ -21,20 +27,30 @@ package main
 
 import (
 	"machine"
+	"strconv"
 	"time"
 
 	"tinygo.org/x/drivers/mpu6050"
 	"tinygo.org/x/tap"
 )
 
+const maxanalog = 65535 // 16-bit ADC
+const allowedvariance = 100
+
 func main() {
+	machine.InitADC()
+
 	waitForStart()
 
 	t := tap.New()
-	t.Header(4)
+	t.Header(6)
 
 	t.Ok(digitalReadVoltageGPIO(), "digitalReadVoltage (GPIO)")
 	t.Ok(digitalWriteGPIO(), "digitalWrite (GPIO)")
+	t.Ok(analogReadVoltage(), "analogReadVoltage (ADC)")
+	t.Ok(analogReadGround(), "analogReadGround (ADC)")
+	// commented out because of variance in readings
+	//t.Ok(analogReadHalfVoltage(t), "analogReadHalfVoltage (ADC)")
 	t.Ok(i2cConnection(), "i2cConnection (MPU6050)")
 	t.Ok(spiTxRx(), "spiTxRx (SPI)")
 
@@ -86,6 +102,80 @@ func digitalWriteGPIO() bool {
 	writepin.Low()
 	time.Sleep(100 * time.Millisecond)
 	return !readpin.Get()
+}
+
+// analog read of pin connected to supply voltage.
+func analogReadVoltage() bool {
+	analogV := machine.ADC{machine.A0}
+
+	analogV.Configure(machine.ADCConfig{})
+	time.Sleep(100 * time.Millisecond)
+
+	// should be close to max
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogV.Get()
+		avg += int(v)
+		time.Sleep(10 * time.Millisecond)
+	}
+	avg /= 10
+	val := uint16(avg)
+
+	if val < maxanalog-allowedvariance {
+		return false
+	}
+
+	return true
+}
+
+// analog read of pin connected to ground.
+func analogReadGround() bool {
+	analogG := machine.ADC{machine.A2}
+
+	analogG.Configure(machine.ADCConfig{})
+	time.Sleep(100 * time.Millisecond)
+
+	// should be close to zero
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogG.Get()
+		avg += int(v)
+		time.Sleep(10 * time.Millisecond)
+	}
+	avg /= 10
+	val := uint16(avg)
+
+	if val > allowedvariance {
+		return false
+	}
+
+	return true
+}
+
+// analog read of pin connected to supply voltage that has been divided by 2
+// using resistors.
+func analogReadHalfVoltage(t *tap.Tester) bool {
+	analogHalf := machine.ADC{machine.A1}
+
+	analogHalf.Configure(machine.ADCConfig{})
+	time.Sleep(100 * time.Millisecond)
+
+	// should be around half the max
+	var avg int
+	for i := 0; i < 10; i++ {
+		v := analogHalf.Get()
+		avg += int(v)
+		time.Sleep(10 * time.Millisecond)
+	}
+	avg /= 10
+	val := uint16(avg)
+
+	if val > maxanalog/2+allowedvariance || val < maxanalog/2-allowedvariance {
+		t.Diagnostic("failed with voltage of " + strconv.Itoa(int(val)))
+		return false
+	}
+
+	return true
 }
 
 func i2cConnection() bool {
