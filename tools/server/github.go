@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/bradleyfalzon/ghinstallation"
-	"github.com/google/go-github/v40/github"
+	"github.com/google/go-github/v84/github"
 )
 
 func authenticateGithubClient(appid, installid int64, privatekeyfile string) (*github.Client, error) {
@@ -209,7 +209,7 @@ func getTinygoBinaryURLFromGH(runID int64) (string, error) {
 
 	// get artifact
 	artifact := artifacts.Artifacts[0]
-	url, _, err := client.Actions.DownloadArtifact(context.Background(), ghorg, ghrepo, artifact.GetID(), true)
+	url, _, err := client.Actions.DownloadArtifact(context.Background(), ghorg, ghrepo, artifact.GetID(), 3)
 	if err != nil {
 		return "", err
 	}
