@@ -1,18 +1,18 @@
 package main
 
 import (
-	"path/filepath"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"time"
 
 	"net/http"
 
 	"github.com/cavaliercoder/grab"
-	"github.com/google/go-github/v40/github"
+	"github.com/google/go-github/v84/github"
 )
 
 const (
