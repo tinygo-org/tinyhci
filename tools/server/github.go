@@ -208,12 +208,17 @@ func getTinygoBinaryURLFromGH(runID int64) (string, error) {
 	}
 
 	// get artifact
-	artifact := artifacts.Artifacts[0]
-	url, _, err := client.Actions.DownloadArtifact(context.Background(), ghorg, ghrepo, artifact.GetID(), 3)
-	if err != nil {
-		return "", err
+	for _, artifact := range artifacts.Artifacts {
+		if strings.Contains(artifact.GetName(), "amd64") {
+			url, _, err := client.Actions.DownloadArtifact(context.Background(), ghorg, ghrepo, artifact.GetID(), 3)
+			if err != nil {
+				return "", err
+			}
+			return url.String(), nil
+		}
 	}
-	return url.String(), nil
+
+	return "", errors.New("no tinygo linux-amd64 artifact found")
 }
 
 func getRecentSuccessfulWorkflowRuns() ([]*github.WorkflowRun, error) {
