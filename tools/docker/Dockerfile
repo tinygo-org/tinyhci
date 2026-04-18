@@ -23,7 +23,8 @@ FROM tinygohci-base AS tinygohci-build
 ENV TINYGO_RELEASE=0.39.0
 ARG TINYGO_DOWNLOAD_SHA=1234
 
-ADD tools/docker/versions/${TINYGO_DOWNLOAD_SHA}.tar.gz /usr/local
+COPY tools/docker/versions/${TINYGO_DOWNLOAD_SHA}.deb /tmp/tinygo.deb
+RUN dpkg -i /tmp/tinygo.deb && rm /tmp/tinygo.deb
 ENV PATH=${PATH}:/usr/local/tinygo/bin
 
 RUN apt-get remove -y wget && \
