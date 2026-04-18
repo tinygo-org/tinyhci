@@ -4,15 +4,50 @@
 
 TinyHCI is used to test the TinyGo (http://tinygo.org) `machine` package's hardware abstraction layer with integration tests that use actual microcontroller hardware. It is intended to provide smoke test implementations that exercise the basic functionality for each kind of hardware interface for each supported microcontroller.
 
-Hardware in the loop integration tests have been implemented for the following boards:
+Hardware in the loop tests have been implemented for the following boards:
 
-- Adafruit Circuit Playground Express (Microchip SAMD21x based on ARM Cortex-M0)
-- Adafruit ItsyBitsy-NRF52840 (Nordic Semiconductor nRF52840 based on ARM Cortex-M4)
-- Arduino Nano33-IoT (Microchip SAMD21x based on ARM Cortex-M0)
-- Arduino Uno (Atmel ATmega328p based on AVR)
-- Raspberry Pi RP2040 Pico (Raspberry Pi Ltd 32-bit dual ARM Cortex-M0+)
-- STMicro STM32F407 Discovery (STMicro STM32F407VG based on ARM Cortex-M4)
-- Seeedstudio Xiao-ESP32C3 (32-bit core RISC-V microcontroller)
+### Adafruit Circuit Playground Express
+
+![Circuit Playground Express](./images/boards/circuit-playground.svg)
+
+Adafruit Circuit Playground Express (Microchip SAMD21x based on ARM Cortex-M0)
+
+### Adafruit ItsyBitsy-NRF52840
+
+![Adafruit ItsyBitsy-NRF52840](./images/boards/itsybitsy-nrf52840.svg)
+
+Adafruit ItsyBitsy-NRF52840 (Nordic Semiconductor nRF52840 based on ARM Cortex-M4)
+
+### Arduino Nano33-IoT
+
+![Arduino Nano33-IoT](./images/boards/arduino-nano33.svg)
+
+Arduino Nano33-IoT (Microchip SAMD21x based on ARM Cortex-M0)
+
+### Arduino Uno
+
+![Arduino Uno](./images/boards/arduino.svg)
+
+Arduino Uno (Atmel ATmega328p based on AVR)
+
+### Raspberry Pi Pico
+
+![Raspberry Pi Pico](./images/boards/pico.svg)
+
+Raspberry Pi Pico (Raspberry Pi Ltd RP2040 32-bit dual ARM Cortex-M0+)
+
+### STMicro STM32F407 Discovery
+
+![STMicro STM32F407 Discovery](./images/boards/stm32f407-discovery.svg)
+
+STMicro STM32F407 Discovery (STMicro STM32F407VG based on ARM Cortex-M4)
+
+### Seeed Studio Xiao-ESP32C3
+
+![Seeed Studio Xiao-ESP32C3](./images/boards/xiao-esp32c3.svg)
+
+Seeed Studio Xiao-ESP32C3 (32-bit core RISC-V microcontroller)
+
 
 The following boards are currently inactive:
 
