@@ -275,7 +275,7 @@ func buildDocker(sha string) error {
 // with this SHA.
 func downloadBinary(url, sha string) error {
 	// check if the file is already downloaded for this sha
-	dest := "tools/docker/versions/" + sha + ".tar.gz"
+	dest := "tools/docker/versions/" + sha + ".deb"
 	if !fileExists(dest) {
 		log.Println("Downloading binary for", sha)
 
