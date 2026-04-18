@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"time"
 
@@ -276,38 +275,15 @@ func buildDocker(sha string) error {
 // with this SHA.
 func downloadBinary(url, sha string) error {
 	// check if the file is already downloaded for this sha
-	if !fileExists("tools/docker/versions/" + sha + ".tar.gz") {
+	dest := "tools/docker/versions/" + sha + ".tar.gz"
+	if !fileExists(dest) {
 		log.Println("Downloading binary for", sha)
 
-		resp, err := grab.Get("tinygo-latest.zip", url)
+		resp, err := grab.Get(dest, url)
 		if err != nil {
 			return err
 		}
 		log.Println("downloaded bytes:", resp.BytesComplete())
-		// unzip
-		log.Println("unzipping")
-		out, err := exec.Command("unzip", "tinygo-latest.zip",
-			"tinygo*.linux-amd64.tar.gz").CombinedOutput()
-		if err != nil {
-			return err
-		}
-		log.Println(string(out))
-
-		// move file
-		log.Println("moving file")
-		f, err := filepath.Glob("tinygo*.linux-amd64.tar.gz")
-		if err != nil {
-			return err
-		}
-		err = os.Rename(f[0], "tools/docker/versions/"+sha+".tar.gz")
-		if err != nil {
-			return err
-		}
-
-		err = os.Remove("tinygo-latest.zip")
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
