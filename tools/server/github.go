@@ -196,8 +196,8 @@ func getTinygoBinaryURLFromGH(runID int64) (string, error) {
 		return "using current TinyGo binary release", nil
 	}
 
-	// get list of artifacts. it will be first/only one
-	opts := github.ListOptions{}
+	// get list of artifacts for this workflow run
+	opts := github.ListOptions{PerPage: 100}
 	artifacts, _, err := client.Actions.ListWorkflowRunArtifacts(context.Background(), ghorg, ghrepo, runID, &opts)
 	if err != nil {
 		return "", err
@@ -207,9 +207,10 @@ func getTinygoBinaryURLFromGH(runID int64) (string, error) {
 		return "", errors.New("no artifacts found")
 	}
 
-	// get artifact
+	// The build workflow publishes tarballs and debs for several
+	// architectures, so match only the amd64 deb package.
 	for _, artifact := range artifacts.Artifacts {
-		if strings.Contains(artifact.GetName(), "amd64") {
+		if strings.HasSuffix(artifact.GetName(), "_amd64.deb") {
 			url, _, err := client.Actions.DownloadArtifact(context.Background(), ghorg, ghrepo, artifact.GetID(), 3)
 			if err != nil {
 				return "", err
@@ -218,7 +219,7 @@ func getTinygoBinaryURLFromGH(runID int64) (string, error) {
 		}
 	}
 
-	return "", errors.New("no tinygo linux-amd64 artifact found")
+	return "", errors.New("no tinygo linux-amd64 deb artifact found")
 }
 
 func getRecentSuccessfulWorkflowRuns() ([]*github.WorkflowRun, error) {
