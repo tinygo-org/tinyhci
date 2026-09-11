@@ -69,7 +69,7 @@ var (
 			port:        "circuitplay_express",
 			baud:        115200,
 			resetpause:  15 * time.Second,
-			enabled:     true,
+			enabled:     false,
 		},
 		&Board{
 			target:      "maixbit",
