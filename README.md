@@ -89,7 +89,7 @@ One the MCU has been flashed with the test code, here is how it works with the `
 ./build/testrunner /dev/ttyACM0 115200 5
 
 TAP version 13
-1..8
+1..10
 ok 1 - digitalReadVoltage (GPIO)
 ok 2 - digitalReadGround (GPIO)
 ok 3 - digitalWrite (GPIO)
@@ -97,7 +97,9 @@ ok 4 - analogReadVoltage (ADC)
 ok 5 - analogReadGround (ADC)
 ok 6 - analogReadHalfVoltage (ADC)
 ok 7 - i2cConnection (I2C)
-ok 8 - spiTxRx (SPI)
+ok 8 - spiDMARecovery (SPI)
+ok 9 - spiDMAChaining (SPI)
+ok 10 - spiTxRx (SPI)
 ```
 
 ## Hardware Tests
@@ -119,6 +121,19 @@ Analog inputs are connected using a voltage divider made using two resistors. Th
 ### SPI
 
 The chip data input and output are wired in a loopback form in order to test if the pins are writing and reading the expected values.
+
+The Pico suite also checks recovery from a write-only SPI DMA bus error.
+It requires a TinyGo build with `machine.ErrSPIDMA`
+([tinygo-org/tinygo#6012](https://github.com/tinygo-org/tinygo/pull/6012)).
+The test uses the SIO address `0xd0000000`, which DMA cannot read on RP2040
+or RP2350. It requires `machine.ErrSPIDMA`, then a successful write-only
+transfer. The loopback check follows without SPI reconfiguration.
+The test runner's 60-second timeout stops a test run if a transfer stalls.
+
+The Pico suite also checks that a write-only SPI1 transfer does not restart
+SPI0 DMA ([tinygo-org/tinygo#6010](https://github.com/tinygo-org/tinygo/pull/6010)).
+It checks for unexpected SPI0 receive data through the same loopback.
+SPI1 uses GP10 (SCK) and GP11 (SDO); no SPI1 wiring is needed.
 
 ### PWM
 

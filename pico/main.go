@@ -23,9 +23,12 @@ package main
 // SPI tests:
 // 	Pico GP16 SDO <--> GP19 Pico SDI
 import (
+	"device/rp"
 	"machine"
+	"runtime"
 
 	"time"
+	"unsafe"
 
 	"tinygo.org/x/drivers/mpu6050"
 	"tinygo.org/x/tap"
@@ -60,7 +63,7 @@ func main() {
 	waitForStart()
 
 	t := tap.New()
-	t.Header(8)
+	t.Header(10)
 
 	t.Ok(digitalReadVoltage(), "digitalReadVoltage (GPIO)")
 	t.Ok(digitalReadGround(), "digitalReadGround (GPIO)")
@@ -69,6 +72,8 @@ func main() {
 	t.Ok(analogReadGround(), "analogReadGround (ADC)")
 	t.Ok(analogReadHalfVoltage(), "analogReadHalfVoltage (ADC)")
 	t.Ok(i2cConnection(), "i2cConnection (I2C)")
+	t.Ok(spiDMARecovery(), "spiDMARecovery (SPI)")
+	t.Ok(spiDMAChaining(), "spiDMAChaining (SPI)")
 	t.Ok(spiTxRx(), "spiTxRx (SPI)")
 
 	endTests()
@@ -241,23 +246,75 @@ func i2cConnection() bool {
 	return true
 }
 
-// checks if it is possible to send/receive by spi
-func spiTxRx() bool {
+func spiDMARecovery() bool {
 	spi0 := machine.SPI0
-	spi0.Configure(machine.SPIConfig{
+	err := spi0.Configure(machine.SPIConfig{
 		SCK:       machine.SPI0_SCK_PIN,
 		SDO:       machine.SPI0_SDO_PIN,
 		SDI:       machine.SPI0_SDI_PIN,
 		Frequency: 4000000,
 	})
+	if err != nil {
+		return false
+	}
 
+	// DMA cannot read SIO registers on RP2040 or RP2350.
+	bad := unsafe.Slice((*byte)(unsafe.Pointer(uintptr(0xd0000000))), 64)
+	if err := spi0.Tx(bad, nil); err != machine.ErrSPIDMA {
+		return false
+	}
+
+	good := make([]byte, 64)
+	for i := range good {
+		good[i] = byte(i)
+	}
+	return spi0.Tx(good, nil) == nil
+}
+
+func spiDMAChaining() bool {
+	err := machine.SPI1.Configure(machine.SPIConfig{
+		SCK:       machine.GP10,
+		SDO:       machine.GP11,
+		SDI:       machine.NoPin,
+		Frequency: 4000000,
+	})
+	if err != nil {
+		return false
+	}
+
+	// Keep the next 64 bytes valid if SPI1 restarts SPI0's DMA channel.
+	from := make([]byte, 128)
+	for i := range from {
+		from[i] = byte(i)
+	}
+	if err := machine.SPI0.Tx(from[:64], nil); err != nil {
+		return false
+	}
+
+	err = machine.SPI1.Tx([]byte{0x55, 0xaa}, nil)
+	// Allow an unintended 64-byte SPI0 transfer to finish at 4 MHz.
+	time.Sleep(time.Millisecond)
+	for machine.SPI0.Bus.SSPSR.HasBits(rp.SPI0_SSPSR_BSY) {
+	}
+	unexpected := machine.SPI0.Bus.SSPSR.HasBits(rp.SPI0_SSPSR_RNE)
+	for machine.SPI0.Bus.SSPSR.HasBits(rp.SPI0_SSPSR_RNE) {
+		machine.SPI0.Bus.SSPDR.Get()
+	}
+	machine.SPI0.Bus.SSPICR.Set(rp.SPI0_SSPICR_RORIC)
+	runtime.KeepAlive(from)
+
+	return err == nil && !unexpected
+}
+
+// checks if it is possible to send/receive by spi
+func spiTxRx() bool {
 	from := make([]byte, 8)
 	for i := range from {
 		from[i] = byte(i)
 	}
 	to := make([]byte, len(from))
 
-	err := spi0.Tx(from, to)
+	err := machine.SPI0.Tx(from, to)
 	if err != nil {
 		return false
 	}
