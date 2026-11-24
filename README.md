@@ -145,6 +145,8 @@ TODO
 
 We run each set of checks using a docker container with the associated `tinygo` binary for simplicity and greater security.
 
+The server compiles the tests for all boards at the same time, then flashes and tests one board at a time. The `tinygohci-gomod` and `tinygohci-gocache` docker volumes keep Go modules and the Go build cache between builds. Each build has its own `tinygohci-cache-<sha>` volume for the TinyGo cache, which the server removes when the build is done.
+
 To build it:
 
 ```

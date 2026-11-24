@@ -128,8 +128,49 @@ func GetBoard(target string) *Board {
 	return nil
 }
 
-func (board *Board) flash(sha string) (string, error) {
+func buildTag(sha string) string {
+	return "tinygohci:" + sha[:7]
+}
+
+func tinygoCacheVolume(sha string) string {
+	return "tinygohci-cache-" + sha[:7]
+}
+
+// dockerRunArgs returns the docker run arguments shared by the compile and flash steps.
+// The Go caches are kept between builds. The TinyGo cache is only kept for one SHA.
+func (board *Board) dockerRunArgs(sha string) ([]string, error) {
 	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	return []string{"run", "--rm",
+		"-v", pwd + ":/src",
+		"-w", "/src/" + board.target,
+		"-v", "tinygohci-gomod:/root/go/pkg/mod",
+		"-v", "tinygohci-gocache:/root/.cache/go-build",
+		"-v", tinygoCacheVolume(sha) + ":/root/.cache/tinygo",
+	}, nil
+}
+
+// compile builds the test program without flashing, to fill the TinyGo cache.
+func (board *Board) compile(sha string) (string, error) {
+	args, err := board.dockerRunArgs(sha)
+	if err != nil {
+		return err.Error(), err
+	}
+
+	args = append(args, buildTag(sha),
+		"tinygo", "build",
+		"-o", "/tmp/"+board.target+".elf",
+		"-target", board.target,
+		".")
+	out, err := exec.Command("docker", args...).CombinedOutput()
+	return string(out), err
+}
+
+func (board *Board) flash(sha string) (string, error) {
+	args, err := board.dockerRunArgs(sha)
 	if err != nil {
 		return err.Error(), err
 	}
@@ -139,25 +180,19 @@ func (board *Board) flash(sha string) (string, error) {
 		return err.Error(), err
 	}
 
-	buildtag := fmt.Sprintf("tinygohci:%s", sha[:7])
-	device := fmt.Sprintf("--device=/dev/%s:/dev/%s:rwm", realdev, realdev)
-	port := fmt.Sprintf("-port=/dev/%s", realdev)
-	workdir := fmt.Sprintf("/src/%s", board.target)
-	out, err := exec.Command("docker", "run",
-		device,
+	args = append(args,
+		fmt.Sprintf("--device=/dev/%s:/dev/%s:rwm", realdev, realdev),
 		"-v", "/media:/media:shared",
-		"-v", pwd+":/src",
-		"-w", workdir,
 		"-v", "/dev/bus/usb:/dev/bus/usb",
 		"--device-cgroup-rule", "a 189:* rwm",
-		"--rm",
-		buildtag,
+		buildTag(sha),
 		"tinygo", "flash",
 		"-size", "short",
 		"-timeout", "30s",
 		"-target", board.target,
-		port,
-		".").CombinedOutput()
+		"-port=/dev/"+realdev,
+		".")
+	out, err := exec.Command("docker", args...).CombinedOutput()
 	return string(out), err
 }
 

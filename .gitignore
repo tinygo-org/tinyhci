@@ -1,3 +1,5 @@
 build
 keys/*.pem
 tools/docker/versions/*.tar.gz
+tools/docker/versions/*.deb
+tools/docker/versions/*.part

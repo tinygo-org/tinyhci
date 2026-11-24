@@ -120,17 +120,18 @@ func main() {
 			if event.WorkflowRun.GetStatus() == "completed" &&
 				event.WorkflowRun.GetConclusion() == "success" &&
 				event.WorkflowRun.GetName() == "Linux" {
+				b, ok := builds[event.WorkflowRun.GetHeadSHA()]
+				if !ok || len(b.runs) == 0 {
+					log.Printf("No pending checks for %s\n", event.WorkflowRun.GetHeadSHA())
+					return
+				}
+
 				url, err := getTinygoBinaryURLFromGH(event.WorkflowRun.GetID())
 				if err != nil {
 					log.Println(err)
 					return
 				}
 
-				b, ok := builds[event.WorkflowRun.GetHeadSHA()]
-				if !ok {
-					b = NewBuild(event.WorkflowRun.GetHeadSHA())
-					builds[event.WorkflowRun.GetHeadSHA()] = b
-				}
 				b.binaryURL = url
 				b.pendingCI = false
 				buildsCh <- b
@@ -208,6 +209,11 @@ func processBuilds(builds chan *Build) {
 	for {
 		select {
 		case build := <-builds:
+			if len(build.runs) == 0 {
+				log.Printf("No checks to run for commit %s\n", build.sha)
+				continue
+			}
+
 			log.Printf("Starting tests for commit %s\n", build.sha)
 			build.startCheckSuite()
 
@@ -232,6 +238,9 @@ func processBuilds(builds chan *Build) {
 				continue
 			}
 
+			log.Printf("Compiling tests for commit %s\n", build.sha)
+			build.compileBoards()
+
 			log.Printf("Running checks for commit %s\n", build.sha)
 			for _, run := range build.runs {
 				target, err := parseTarget(run.GetName())
@@ -245,7 +254,17 @@ func processBuilds(builds chan *Build) {
 					build.processBoardRun(board)
 				}
 			}
+
+			removeCacheVolume(build.sha)
 		}
+	}
+}
+
+func removeCacheVolume(sha string) {
+	out, err := exec.Command("docker", "volume", "rm", "-f", tinygoCacheVolume(sha)).CombinedOutput()
+	if err != nil {
+		log.Println(err)
+		log.Println(string(out))
 	}
 }
 
@@ -253,9 +272,8 @@ func processBuilds(builds chan *Build) {
 // with this SHA.
 func buildDocker(sha string) error {
 	buildarg := fmt.Sprintf("TINYGO_DOWNLOAD_SHA=%s", sha)
-	buildtag := "tinygohci:" + sha[:7]
 	cmd := exec.Command("docker", "build",
-		"-t", buildtag,
+		"-t", buildTag(sha),
 		"-f", "tools/docker/Dockerfile",
 		"--build-arg", buildarg, ".")
 	cmd.Env = os.Environ()
@@ -279,11 +297,13 @@ func downloadBinary(url, sha string) error {
 	if !fileExists(dest) {
 		log.Println("Downloading binary for", sha)
 
-		resp, err := grab.Get(dest, url)
+		resp, err := grab.Get(dest+".part", url)
 		if err != nil {
 			return err
 		}
 		log.Println("downloaded bytes:", resp.BytesComplete())
+
+		return os.Rename(dest+".part", dest)
 	}
 	return nil
 }
@@ -331,29 +351,44 @@ func handlePreviouslyQueuedBuilds(buildsCh chan *Build) {
 		return
 	}
 
+	seen := make(map[string]bool)
 	for _, cib := range cibuilds {
-		// any in_progress checkruns for this build? restart them
-		runs, err := findCheckRuns(cib.GetHeadSHA(), "in_progress")
+		sha := cib.GetHeadSHA()
+		if seen[sha] {
+			continue
+		}
+		seen[sha] = true
+
+		build := NewBuild(sha)
+		for _, status := range []string{"in_progress", "queued"} {
+			runs, err := findCheckRuns(sha, status)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			for _, run := range runs {
+				target, err := parseTarget(run.GetName())
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				build.runs[target] = run
+			}
+		}
+
+		if len(build.runs) == 0 {
+			continue
+		}
+
+		url, err := getTinygoBinaryURLFromGH(cib.GetID())
 		if err != nil {
 			log.Println(err)
-			return
+			continue
 		}
 
-		for _, run := range runs {
-			performCheckRun(run, cib.GetID(), buildsCh)
-		}
-	}
-
-	for _, cib := range cibuilds {
-		// any queued checkruns for this build?
-		runs, err := findCheckRuns(cib.GetHeadSHA(), "queued")
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		for _, run := range runs {
-			performCheckRun(run, cib.GetID(), buildsCh)
-		}
+		build.binaryURL = url
+		builds[sha] = build
+		buildsCh <- build
 	}
 }
