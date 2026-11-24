@@ -16,19 +16,18 @@ RUN pip3 install git+https://github.com/kendryte/kflash.py.git --break-system-pa
 ENV GO_RELEASE=1.27.3
 RUN wget https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz && \
     tar xfv go${GO_RELEASE}.linux-amd64.tar.gz -C /usr/local && \
-    rm go${GO_RELEASE}.linux-amd64.tar.gz
+    rm go${GO_RELEASE}.linux-amd64.tar.gz && \
+    apt-get remove -y wget && \
+    apt-get autoremove -y && \
+    apt-get clean
 ENV PATH=${PATH}:/usr/local/go/bin
 
 FROM tinygohci-base AS tinygohci-build
 ENV TINYGO_RELEASE=0.44.0
 ARG TINYGO_DOWNLOAD_SHA=1234
 
-COPY tools/docker/versions/${TINYGO_DOWNLOAD_SHA}.deb /tmp/tinygo.deb
-RUN dpkg -i /tmp/tinygo.deb && rm /tmp/tinygo.deb
+RUN --mount=type=bind,source=tools/docker/versions/${TINYGO_DOWNLOAD_SHA}.deb,target=/tmp/tinygo.deb \
+    dpkg -i /tmp/tinygo.deb
 ENV PATH=${PATH}:/usr/local/tinygo/bin
-
-RUN apt-get remove -y wget && \
-    apt-get autoremove -y && \
-    apt-get clean
 
 CMD ["tinygo"]

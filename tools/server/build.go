@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	"github.com/google/go-github/v84/github"
@@ -32,6 +33,7 @@ func (build Build) processBoardRun(board *Board) {
 	if !board.enabled {
 		log.Printf("Board %s has been disabled, so passing.\n", board.displayname)
 		build.passCheckRun(board.target, "Board disabled in TinyHCI.")
+		return
 	}
 
 	log.Printf("Flashing board %s\n", board.displayname)
@@ -54,6 +56,28 @@ func (build Build) processBoardRun(board *Board) {
 	}
 
 	build.passCheckRun(board.target, boardHeading(board)+flashout(fout)+testsout(out))
+}
+
+// compileBoards compiles the tests for all boards at the same time.
+// Errors are ignored here because the flash step reports them.
+func (build Build) compileBoards() {
+	var wg sync.WaitGroup
+	for target := range build.runs {
+		board := GetBoard(target)
+		if board == nil || !board.enabled {
+			continue
+		}
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			log.Printf("Compiling tests for board %s\n", board.displayname)
+			if out, err := board.compile(build.sha); err != nil {
+				log.Printf("Compile failed on board %s: %v\n%s\n", board.displayname, err, out)
+			}
+		}()
+	}
+	wg.Wait()
 }
 
 func boardHeading(board *Board) string {
